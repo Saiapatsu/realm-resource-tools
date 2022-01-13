@@ -3,41 +3,48 @@ local xmls = require "xmls"
 
 local rootdir = args[1]:sub(1, args[1]:match("()[^\\]*$") - 1)
 local srcdir  = rootdir .. "src\\"
+local dir = srcdir .. "data"
+-- local dir = rootdir .. "haizor"
 
-function find(self, match, i)
-	for i = i or 1, #self do
-		if self[i]._name == match then
+local root = {}
+local counts = {}
+local names = {}
+
+function find(self, match)
+	for i = 1, #self do
+		if names[self[i]] == match then
 			return self[i]
 		end
 	end
 end
 
-local root = {}
-local counts = {}
+local function get(tbl, key)
+	local item = find(tbl, key)
+	if not item then
+		item = {}
+		names[item] = key
+		counts[item] = 0
+		table.insert(tbl, item)
+	end
+	return item
+end
 
-for filename in fs.scandirSync(srcdir .. "data") do
--- for filename in fs.scandirSync(rootdir .. "haizor") do
-	local parser = xmls.parser(fs.readFileSync(srcdir .. "data\\" .. filename))
-	-- local parser = xmls.parser(fs.readFileSync(rootdir .. "haizor\\" .. filename))
+for filename in fs.scandirSync(dir) do
+	local parser = xmls.parser(fs.readFileSync(dir .. "\\" .. filename))
 	local stack = {root}
+	
 	while true do
 		local type, value, loc = parser()
+		
 		if type == "tag" then
-			local tbl = find(stack[#stack], value)
-			if not tbl then
-				tbl = {_name = value}
-				table.insert(stack[#stack], tbl)
-			end
+			local tbl = get(stack[#stack], value)
 			table.insert(stack, tbl)
-			counts[tbl] = (counts[tbl] or 0) + 1
+			counts[tbl] = counts[tbl] + 1
 			
 			for attr, value in parser do
-				local tbl = find(stack[#stack], "@" .. attr)
-				if not tbl then
-					tbl = {_name = "@" .. attr}
-					table.insert(stack[#stack], tbl)
-				end
-				counts[tbl] = (counts[tbl] or 0) + 1
+				attr = "@" .. attr
+				local tbl = get(tbl, attr)
+				counts[tbl] = counts[tbl] + 1
 			end
 			
 		elseif type == nil then
@@ -52,7 +59,7 @@ local function prn(tbl, name, level)
 	table.sort(tbl, function(a, b) return counts[a] > counts[b] end)
 	io.write(string.rep("\t", level) .. name .. " " .. (counts[tbl] or "X") .. "\n")
 	for i,v in ipairs(tbl) do
-		prn(v, v._name, level + 1)
+		prn(v, names[v], level + 1)
 	end
 end
 
