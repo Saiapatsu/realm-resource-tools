@@ -155,10 +155,10 @@ for id, asset in pairs(json.parse(fs.readFileSync(dstdir .. "assets\\assets.json
 end
 
 -- count tiles that are only in src, not in dst
-for k in pairs(srcTileToPos) do
+for k, v in pairs(srcTileToPos) do
 	if not dstTileToPos[k] then
 		dstremoved()
-		print("Missing tile: " .. k)
+		print("Missing tile: " .. v)
 	end
 end
 
@@ -176,6 +176,7 @@ print("Updating data")
 local rope, cursor
 
 function Texture(parser)
+	xmls.wasteAttr(parser)
 	-- <Texture><File>file</File><Index>0</Index></Texture>
 	-- A, B, C, D are start of text, etag, text, etag respectively
 	local lkey, file , locA, locA, locB = assert(xmls.kvtags(parser))
