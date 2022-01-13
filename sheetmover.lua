@@ -4,13 +4,7 @@ local xmls = require "xmls"
 
 -- warning: naive popen()
 
--- todo: add xmls attribute support, harvest type="", map onto z-curve
--- set bits in a table, keep track of highest set index (sparse array..)
--- string.rep("\0"):gsub(., remap), pipe to magick gray:-
--- maybe let each non-null byte stand for the sheet it was used in?
--- but you need to create a report anyway...
-
--- todo: ensure it works fine when simply renaming a file (e.g. arena to arena8x8)
+-- todo: instead of matching non-null, just compare with a known fully null tile
 
 local rootdir = args[1]:sub(1, args[1]:match("()[^\\]*$") - 1)
 local srcdir  = rootdir .. "src\\"
@@ -316,8 +310,18 @@ end
 prn(root, "root", 0)
 --]]
 
+-- https://stackoverflow.com/questions/4909263/how-to-efficiently-de-interleave-bits-inverse-morton
+local function morton1(x)
+	x = bit.band(x, 0x55555555);
+	x = bit.band(bit.bor(x, bit.rshift(x, 1)), 0x33333333)
+	x = bit.band(bit.bor(x, bit.rshift(x, 2)), 0x0F0F0F0F)
+	x = bit.band(bit.bor(x, bit.rshift(x, 4)), 0x00FF00FF)
+	x = bit.band(bit.bor(x, bit.rshift(x, 8)), 0x0000FFFF)
+	return x
+end
+
 local typeid = {}
-local types = {}
+-- local types = {}
 local lasttype = 0
 
 local function HasType(parser)
@@ -328,42 +332,47 @@ local function HasType(parser)
 			attr == "id"   then id   = value
 		end
 	end
-	if typeid[type] then
-		print(type, id)
+	
+	-- local x = morton1(type - 1)
+	-- local y = morton1(bit.rshift(type - 1, 1))
+	-- local index = y * 256 + x
+	index = type
+	
+	if typeid[index] then
+		-- print(type, id)
 	else
-		typeid[type] = id
-		table.insert(types, type)
+		typeid[index] = id
+		-- table.insert(types, type)
 		lasttype = math.max(lasttype, type)
 	end
 	xmls.wastecontent(parser)
 end
 
 local Root = {
-	-- Objects = {
-		-- Object = HasType,
-	-- },
-	GroundTypes = {
-		Ground = HasType,
+	Objects = {
+		Object = HasType,
 	},
+	-- GroundTypes = {
+		-- Ground = HasType,
+	-- },
 }
 
-for filename in fs.scandirSync(srcdir .. "data") do
-	local parser = xmls.parser(fs.readFileSync(srcdir .. "data\\" .. filename))
+local dir = rootdir .. "haizor"
+for filename in fs.scandirSync(dir) do
+	local parser = xmls.parser(fs.readFileSync(dir .. "\\" .. filename))
 	
 	rope, cursor = {}, 1
-	xmls.scan(parser, Root)
+	pcall(xmls.scan, parser, Root)
 	-- concat rope, output
 end
 
 print("max", lasttype)
 
-table.sort(types)
+-- table.sort(types)
 
-for _,type in ipairs(types) do
-	io.write(type .. "\t" .. typeid[type] .. "\n")
-end
-
-do return end
+-- for _,type in ipairs(types) do
+	-- io.write(type .. "\t" .. typeid[type] .. "\n")
+-- end
 
 local log2 = 0
 while lasttype ~= 0 do
@@ -371,11 +380,13 @@ while lasttype ~= 0 do
 	lasttype = bit.rshift(lasttype, 1)
 end
 
-log2 = log2 + 1
-log2 = log2 + bit.band(log2, 1)
+-- log2 = log2 + 1
+-- log2 = log2 + bit.band(log2, 1)
 
-local size = bit.lshift(1, log2) - 1
-local imgsize = bit.lshift(1, log2 / 2)
+-- local size = bit.lshift(1, log2) - 1
+-- local imgsize = bit.lshift(1, log2 / 2)
+local size = 256 * 256
+local imgsize = 256
 
 print("log2", log2)
 print("size", size)
@@ -388,7 +399,9 @@ local file = io.popen(table.concat({
 	"GRAY:-",
 	"out.png",
 }, " "), "wb")
-file:write(string.rep("\0", size):gsub("().", function(type) return typeid[type] and "\255" end))
+
+file:write(string.rep("\0", size):gsub("().", function(type) return typeid[type - 1] and "\255" end))
+
 file:close()
 
 do return end
