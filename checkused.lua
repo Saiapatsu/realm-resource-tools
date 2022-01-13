@@ -19,6 +19,7 @@ print("Reading data")
 
 local usedTextures = {}
 local usedAnimatedTextures = {}
+local usedFiles = {}
 
 function Texture(parser)
 	xmls.wasteAttr(parser)
@@ -33,6 +34,7 @@ function Texture(parser)
 	-- print(lkey, lvalue, rkey, rvalue)
 	local atom = makePos(file, tonumber(index))
 	usedTextures[atom] = true
+	usedFiles[file] = true
 end
 
 function AnimatedTexture(parser)
@@ -48,6 +50,7 @@ function AnimatedTexture(parser)
 	-- print(lkey, lvalue, rkey, rvalue)
 	local atom = makePos(file, tonumber(index))
 	usedAnimatedTextures[atom] = true
+	usedFiles[file] = true
 end
 
 -- xmls.children{Texture = Texture, Animation = xmls.children{}}
@@ -143,6 +146,8 @@ print("Processing images")
 local assets = json.parse(fs.readFileSync(dir .. "assets\\assets.json"))
 
 for id, asset in pairs(assets.images) do
+	if not usedFiles[id] then goto continue end
+	
 	local empty = string.rep("\0", asset.w * asset.h * DEPTH)
 	local fileUsed = writeSprites(dir .. "used\\" .. id .. ".png", asset.w, asset.h, 16)
 	local fileUnused = writeSprites(dir .. "unused\\" .. id .. ".png", asset.w, asset.h, 16)
@@ -160,9 +165,13 @@ for id, asset in pairs(assets.images) do
 	
 	fileUsed:close()
 	fileUnused:close()
+	
+	::continue::
 end
 
 for id, asset in pairs(assets.animatedchars) do
+	if not usedFiles[id] then goto continue end
+	
 	local empty = string.rep("\0", asset.w * asset.h * DEPTH)
 	local fileUsed = writeSprites(dir .. "used\\" .. id .. ".png", asset.w, asset.h, 1)
 	local fileUnused = writeSprites(dir .. "unused\\" .. id .. ".png", asset.w, asset.h, 1)
@@ -199,4 +208,6 @@ for id, asset in pairs(assets.animatedchars) do
 		fileUsed:close()
 		fileUnused:close()
 	end
+	
+	::continue::
 end
