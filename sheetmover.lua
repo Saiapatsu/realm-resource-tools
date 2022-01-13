@@ -32,7 +32,9 @@ local function readSprites(filepath, w, h, callback)
 		"-background #00000000",
 		"-alpha Background",
 		-- split
-		" -crop", w .. "x" .. h,
+		"-crop", w .. "x" .. h,
+		-- some sheets (e.g. the willem drawings) are ill-fitting, enlarge sprites
+		"-extent", w .. "x" .. h,
 		-- output
 		"-depth 8",
 		"RGBA:-",
@@ -85,8 +87,10 @@ print("Reading source images")
 local srcTileToPos = {}
 local srcPosToTile = {}
 
-for id, asset in pairs(json.parse(fs.readFileSync(srcdir .. "assets\\assets.json"))) do
-	local emptytile = string.rep("\0", asset.w * asset.h)
+local assets = json.parse(fs.readFileSync(srcdir .. "assets\\assets.json"))
+
+for id, asset in pairs(assets.images) do
+	local emptytile = string.rep("\0", asset.w * asset.h * DEPTH)
 	
 	readSprites(srcdir .. "assets\\" .. asset.file, asset.w, asset.h, function(i, tile)
 		srcamount()
@@ -114,7 +118,9 @@ print("Reading destination images")
 local srcPosToDstPos = {}
 local dstTileToPos = {}
 
-for id, asset in pairs(json.parse(fs.readFileSync(dstdir .. "assets\\assets.json"))) do
+local assets = json.parse(fs.readFileSync(dstdir .. "assets\\assets.json"))
+
+for id, asset in pairs(assets.images) do
 	local emptytile = string.rep("\0", asset.w * asset.h * DEPTH)
 	
 	readSprites(dstdir .. "assets\\" .. asset.file, asset.w, asset.h, function(i, tile)
