@@ -49,7 +49,7 @@ local function HasType(parser)
 		typeid[index] = true
 	end
 	
-	xmls.wastecontent(parser)
+	xmls.wasteContent(parser)
 end
 
 local Root = {
