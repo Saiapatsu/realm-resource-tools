@@ -1,17 +1,16 @@
 local fs = require "fs"
 local xmls = require "xmls"
-
-local rootdir = args[1]:sub(1, args[1]:match("()[^\\]*$") - 1)
-local dir = rootdir .. "haizor"
+local common = require "common"
 
 local shouldMorton = true
 
--- bypasses luvit pretty-print console_write() incompetence
-function _G.print(...)
-	local list = {...}
-	for k, v in ipairs(list) do list[k] = tostring(v) end
-	io.stderr:write(table.concat(list, "\t") .. "\n")
-end
+-- warning: naive popen()
+local rootdir = common.rootdir
+local dir = rootdir .. "haizor"
+
+local print = common.print
+
+-----------------------------------
 
 -- https://stackoverflow.com/questions/4909263/how-to-efficiently-de-interleave-bits-inverse-morton
 local function morton1(x)

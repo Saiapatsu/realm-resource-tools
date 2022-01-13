@@ -1,60 +1,19 @@
 local fs = require "fs"
 local json = require "json"
 local xmls = require "xmls"
-
-local DEPTH = 4
+local common = require "common"
 
 -- warning: naive popen()
-
-local rootdir = args[1]:sub(1, args[1]:match("()[^\\]*$") - 1)
+local rootdir = common.rootdir
 local srcdir  = rootdir .. "src\\"
 local dstdir  = rootdir .. "dst\\"
 
--- iterator that returns size bytes of a file each time
-function chunker(file, size)
-	return function(file, index)
-		local data = file:read(size)
-		if data then
-			return index + 1, data
-		end
-	end, file, -1
-end
+local DEPTH = common.DEPTH
+local chunker = common.chunker
+local readSprites = common.readSprites
+local makePos = common.makePos
 
--- perform a callback for each wxh square in an image
-local function readSprites(filepath, w, h, callback)
-	-- size of each sprite in bytes
-	local size = w * h * DEPTH
-	-- split image into sprites
-	local file = io.popen(table.concat({
-		"magick",
-		filepath,
-		-- normalize fully transparent pixels
-		"-background #00000000",
-		"-alpha Background",
-		-- split
-		"-crop", w .. "x" .. h,
-		-- some sheets (e.g. the willem drawings) are ill-fitting, enlarge sprites
-		"-extent", w .. "x" .. h,
-		-- output
-		"-depth 8",
-		"RGBA:-",
-	}, " "), "rb")
-	-- read each sprite and map it to a position in a file
-	for index, tile in chunker(file, size) do
-		callback(index, tile)
-	end
-	file:close()
-end
-
--- local function writeSprites(filepath, w, h)
--- magick montage is fine here...
--- file:write(sprite)
--- file:close()
-
--- sprite location to string
-local function makePos(id, i)
-	return string.format("%s:%s", id, i)
-end
+-----------------------------------
 
 local stats = {}
 local statlist = {}

@@ -1,10 +1,14 @@
 local fs = require "fs"
 local xmls = require "xmls"
+local common = require "common"
 
-local rootdir = args[1]:sub(1, args[1]:match("()[^\\]*$") - 1)
+-- warning: naive popen()
+local rootdir = common.rootdir
 local srcdir  = rootdir .. "src\\"
 local dir = srcdir .. "data"
 -- local dir = rootdir .. "haizor"
+
+-----------------------------------
 
 local root = {}
 local counts = {}
