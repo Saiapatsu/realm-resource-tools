@@ -2,9 +2,9 @@ local fs = require "fs"
 local json = require "json"
 local xmls = require "xmls"
 
--- warning: naive popen()
+local DEPTH = 4
 
--- todo: instead of matching non-null, just compare with a known fully null tile
+-- warning: naive popen()
 
 local rootdir = args[1]:sub(1, args[1]:match("()[^\\]*$") - 1)
 local srcdir  = rootdir .. "src\\"
@@ -419,7 +419,7 @@ end
 -- perform a callback for each wxh square in an image
 local function readSprites(filepath, w, h, callback)
 	-- size of each sprite in bytes
-	local size = w * h * 4
+	local size = w * h * DEPTH
 	-- split image into sprites
 	local file = io.popen(table.concat({
 		"magick",
@@ -482,10 +482,12 @@ local srcTileToPos = {}
 local srcPosToTile = {}
 
 for id, asset in pairs(json.parse(fs.readFileSync(srcdir .. "assets\\assets.json"))) do
+	local emptytile = string.rep("\0", asset.w * asset.h)
+	
 	readSprites(srcdir .. "assets\\" .. asset.file, asset.w, asset.h, function(i, tile)
 		srcamount()
 		
-		if tile:match("[^%z]") then
+		if tile ~= emptytile then
 			-- substantial tile
 			srctile()
 			
@@ -509,10 +511,12 @@ local srcPosToDstPos = {}
 local dstTileToPos = {}
 
 for id, asset in pairs(json.parse(fs.readFileSync(dstdir .. "assets\\assets.json"))) do
+	local emptytile = string.rep("\0", asset.w * asset.h * DEPTH)
+	
 	readSprites(dstdir .. "assets\\" .. asset.file, asset.w, asset.h, function(i, tile)
 		dstamount()
 		
-		if tile:match("[^%z]") then
+		if tile ~= emptytile then
 			-- substantial tile
 			dsttile()
 			
