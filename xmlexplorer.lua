@@ -1,6 +1,9 @@
 local fs = require "fs"
 local xmls = require "xmls"
 
+local rootdir = args[1]:sub(1, args[1]:match("()[^\\]*$") - 1)
+local srcdir  = rootdir .. "src\\"
+
 -- parse all xmls and output list of all tag breadcrumbs
 --[[
 local everything = {}
@@ -231,7 +234,7 @@ prn(root, "root", 0)
 --]]
 
 -- last version, prints sorted tags and attributes
---[[
+-- --[[
 function find(self, match, i)
 	for i = i or 1, #self do
 		if self[i]._name == match then
@@ -285,4 +288,4 @@ local function prn(tbl, name, level)
 end
 
 prn(root, "root", 0)
---]]
+-- --]]
