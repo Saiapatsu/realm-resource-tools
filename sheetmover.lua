@@ -16,14 +16,6 @@ local function print(...)
 	io.stderr:write(table.concat(list, "\t") .. "\n")
 end
 
-local function tonumber2(str)
-	if string.sub(str, 1, 2) == "0x" then
-		return assert(tonumber(string.sub(str, 3), 16))
-	else
-		return assert(tonumber(str))
-	end
-end
-
 -- https://stackoverflow.com/questions/4909263/how-to-efficiently-de-interleave-bits-inverse-morton
 local function morton1(x)
 	x = bit.band(x, 0x55555555);
@@ -42,7 +34,7 @@ local function HasType(parser)
 	local type, id
 	for attr, value in parser do
 		if
-			attr == "type" then type = tonumber2(value) elseif
+			attr == "type" then type = tonumber(value) elseif
 			attr == "id"   then id   = value
 		end
 	end
@@ -295,7 +287,7 @@ function Texture(parser)
 	assert(lkey == "File")
 	assert(rkey == "Index")
 	-- print(lkey, lvalue, rkey, rvalue)
-	local atom = makePos(file, tonumber2(index))
+	local atom = makePos(file, tonumber(index))
 	if srcPosToDstPos[atom] then
 		print("Moving " .. atom .. " to " .. srcPosToDstPos[atom])
 		-- table.insert(rope, string.sub(parser.str, cursor, locA - 1)) -- up to text
