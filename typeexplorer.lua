@@ -4,6 +4,8 @@ local xmls = require "xmls"
 local rootdir = args[1]:sub(1, args[1]:match("()[^\\]*$") - 1)
 local dir = rootdir .. "haizor"
 
+local shouldMorton = true
+
 -- bypasses luvit pretty-print console_write() incompetence
 function _G.print(...)
 	local list = {...}
@@ -21,31 +23,32 @@ local function morton1(x)
 	return x
 end
 
-local typeid = {}
--- local types = {}
-local lasttype = 0
+local typeid = {} -- set of types
 
 local function HasType(parser)
-	local type, id
+	local type
+	-- local id
 	for attr, value in parser do
-		if
-			attr == "type" then type = tonumber(value) elseif
-			attr == "id"   then id   = value
+		if     attr == "type" then type = tonumber(value)
+		-- elseif attr == "id"   then id   = value
 		end
 	end
 	
-	-- local x = morton1(type - 1)
-	-- local y = morton1(bit.rshift(type - 1, 1))
-	-- local index = y * 256 + x
-	index = type
+	local index
+	if shouldMorton then
+		index = morton1(bit.rshift(type - 1, 1)) * 256 + morton1(type - 1)
+	else
+		index = type
+	end
 	
 	if typeid[index] then
+		-- notify of duplicate type
 		-- print(type, id)
 	else
-		typeid[index] = id
-		-- table.insert(types, type)
-		lasttype = math.max(lasttype, type)
+		-- typeid[index] = id
+		typeid[index] = true
 	end
+	
 	xmls.wastecontent(parser)
 end
 
@@ -60,37 +63,11 @@ local Root = {
 
 for filename in fs.scandirSync(dir) do
 	local parser = xmls.parser(fs.readFileSync(dir .. "\\" .. filename))
-	
-	rope, cursor = {}, 1
 	pcall(xmls.scan, parser, Root)
-	-- concat rope, output
 end
 
-print("max", lasttype)
-
--- table.sort(types)
-
--- for _,type in ipairs(types) do
-	-- io.write(type .. "\t" .. typeid[type] .. "\n")
--- end
-
-local log2 = 0
-while lasttype ~= 0 do
-	log2 = log2 + 1
-	lasttype = bit.rshift(lasttype, 1)
-end
-
--- log2 = log2 + 1
--- log2 = log2 + bit.band(log2, 1)
-
--- local size = bit.lshift(1, log2) - 1
--- local imgsize = bit.lshift(1, log2 / 2)
-local size = 256 * 256
 local imgsize = 256
-
-print("log2", log2)
-print("size", size)
-print("imgsize", imgsize)
+local size = imgsize * imgsize
 
 local file = io.popen(table.concat({
 	"magick",
