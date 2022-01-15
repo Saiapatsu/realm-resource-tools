@@ -1,14 +1,15 @@
+-- typeexplorer <dir> [<out>]
+-- Save a 256x256 png representing all the types used in the xmls in dir
+
 local fs = require "fs"
 local xmls = require "xmls"
-local common = require "common"
 
 local shouldMorton = true
 
 -- warning: naive popen()
-local rootdir = common.rootdir
-local dir = rootdir .. "haizor"
-
-local print = common.print
+local dir = args[2]
+local out = args[3] or "out.png"
+if dir == nil then io.stderr:write("No directory specified\n") return end
 
 -----------------------------------
 
@@ -42,7 +43,7 @@ local function HasType(parser)
 	
 	if typeid[index] then
 		-- notify of duplicate type
-		-- print(type, id)
+		-- io.stderr:write(type .. " " .. id .. "\n")
 	else
 		-- typeid[index] = id
 		typeid[index] = true
@@ -73,7 +74,7 @@ local file = io.popen(table.concat({
 	"-depth 8",
 	"-size " .. imgsize .. "x" .. imgsize,
 	"GRAY:-",
-	"out.png",
+	out,
 }, " "), "wb")
 file:write(string.rep("\0", size):gsub("().", function(type) return typeid[type - 1] and "\255" end))
 file:close()

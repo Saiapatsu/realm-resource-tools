@@ -1,12 +1,13 @@
+-- sheetmover [<srcdir>] [<dstdir>]
+
 local fs = require "fs"
 local json = require "json"
 local xmls = require "xmls"
 local common = require "common"
 
 -- warning: naive popen()
-local rootdir = common.rootdir
-local srcdir  = rootdir .. "src\\"
-local dstdir  = rootdir .. "dst\\"
+local srcdir = args[2] or "src"
+local dstdir = args[3] or "dst"
 
 local DEPTH = common.DEPTH
 local chunker = common.chunker

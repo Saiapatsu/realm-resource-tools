@@ -1,12 +1,12 @@
+-- xmlexplorer <dir>
+-- print the hierarchy and amount of all tags in a folder full of xml files
+
 local fs = require "fs"
 local xmls = require "xmls"
-local common = require "common"
 
 -- warning: naive popen()
-local rootdir = common.rootdir
-local srcdir  = rootdir .. "src\\"
-local dir = srcdir .. "data"
--- local dir = rootdir .. "haizor"
+local dir = args[2]
+if dir == nil then io.stderr:write("No directory specified\n") return end
 
 -----------------------------------
 
