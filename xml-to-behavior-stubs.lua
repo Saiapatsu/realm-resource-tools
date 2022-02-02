@@ -1,11 +1,56 @@
 local xmls = require "xmls"
 
-local path = [[parasiteDenObjects.xml]]
-local name = "ParasiteChambers"
+--------------------------------------------------------------------------------
+
+local print, finally, name, path
+
+local function prompt(text)
+	io.stderr:write(text)
+	return io.read()
+end
+
+if npp then
+	npp.ClearConsole()
+	path = npp:GetCurrentDirectory() .. [[\parasiteDenObjects.xml]]
+	name = "ParasiteChambers"
+	print = _G.print
+	
+else
+	path = args[2] or prompt("Path to XML: ")
+	name = args[3] or prompt("Name of the dungeon: ")
+	local output = {}
+	
+	function print(...)
+		local tbl = {}
+		for _,v in ipairs({...}) do
+			table.insert(tbl, tostring(v))
+		end
+		table.insert(output, table.concat(tbl, "\t"))
+	end
+	
+	function finally()
+		local cd = args[1]:sub(1, args[1]:match("()[^\\]*$") - 1)
+		local filename = "BehaviorDb." .. name .. ".cs"
+		local file = io.open(cd .. filename, "w")
+		if not file then
+			prompt("Cannot open " .. filename)
+			return
+		end
+		file:write(table.concat(output, "\n") .. "\n")
+		file:close()
+		prompt("Created " .. filename)
+	end
+end
 
 local file = io.open(path, "rb")
+if not file then
+	prompt("File does not exist")
+	return
+end
 local data = file:read("*a")
 file:close()
+
+--------------------------------------------------------------------------------
 
 local function Projectile(parser)
 	local id
@@ -88,8 +133,6 @@ end
 
 --------------------------------------------------------------------------------
 
-if npp then npp.ClearConsole() end
-
 print([[using wServer.logic.behaviors;
 using wServer.logic.loot;
 using wServer.logic.transitions;
@@ -109,3 +152,5 @@ print([[
 
     }
 }]])
+
+if finally then finally() end
