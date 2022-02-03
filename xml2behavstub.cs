@@ -2,7 +2,7 @@
 
 xml2behavstub <path> <name>
 
-Converts RotMG xml data in <path> into BehaviorDb.<name>.cs behaviors.
+Converts RotMG XML data in <path> into BehaviorDb.<name>.cs behaviors.
 
 The behaviors are empty and meant to be filled in with real behaviors.
 
@@ -10,8 +10,10 @@ There is useful data above each behavior, such as the DisplayId, projectiles,
 whether it's invisible etc., so that you don't have to ctrl-F for this
 information in the source data.
 
-Compile this with Visual Studio or csc (C# Compiler).
+Compile this with Visual Studio or csc (Visual C# Command Line Compiler).
 csc xml2behavstub.cs
+If you don't have Visual Studio, you probably do have .NET - search
+for csc in C:\Windows\Microsoft.NET\Framework\
 
 Run it by drag-and-dropping your XML onto the executable and writing a name.
 You can also run it from the command line.
@@ -24,13 +26,12 @@ offered as-is, without any warranty.
 
 */
 
-using System;
-using System.IO;
-using System.Text;
-using System.Xml;
-using System.Xml.Linq;
-using System.Reflection;
-using System.Globalization;
+using System; // Console
+using System.IO; // File, Path
+using System.Text; // StringBuilder
+using System.Xml.Linq; // XElement
+using System.Reflection; // Assembly
+using System.Globalization; // NumberStyles
 
 namespace xml2behavstub
 {
