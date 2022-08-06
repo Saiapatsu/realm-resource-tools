@@ -3,13 +3,17 @@
 -- indir: directory containing all xml files with objects and grounds in them
 -- outdir: all modified xmls get written in this directory, if not into indir
 
+-- warning: not portable, given that pathsep is hardcoded for Windows here
+
 local xmls = require "xmls2"
 local fs = require "fs" -- from luvit
 local pathsep = "\\"
 
+-- Parse arguments
 local script, indir, outdir = unpack(args)
 assert(indir, "No directory specified")
 outdir = outdir or indir
+
 -- array of objects corresponding to files that need to be modified
 local files = {}
 -- sets of types seen on any object and ground so far
@@ -41,6 +45,7 @@ local function getNextFreeType(types)
 	return i
 end
 
+-- process start tag of an Object or Ground
 local function doTag(xml, types)
 	local type, id
 	for k,v in xml:attrs() do
@@ -69,19 +74,23 @@ local tree = {
 	GroundTypes = {Ground = function(xml) return doTag(xml, typesGround) end},
 }
 
+-- find all xmls with missing types
 traverse(indir, function(path, dir, name)
 	local data = fs.readFileSync(path)
 	local xml = xmls.new(data)
 	xml.path = path
 	xml.dir = dir
 	xml.name = name
+	-- positions of attribute lists that don't have a type
 	xml.missingPos = {}
+	-- set to fill in missing attributes from
 	xml.missingSet = {}
 	local success, message = pcall(xml.doRoots, xml, tree)
 	if not success then print(path, message) end
 	if #xml.missingPos > 0 then table.insert(files, xml) end
 end)
 
+-- amend all xmls with missing types
 for _, xml in pairs(files) do
 	local str = xml.str
 	local pos = 1
