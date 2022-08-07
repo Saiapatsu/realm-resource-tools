@@ -1,3 +1,4 @@
+local unparse = require "escape".unparse
 
 local common = {}
 
@@ -21,7 +22,7 @@ function common.readSprites(filepath, w, h, callback)
 	-- split image into sprites
 	local file = io.popen(table.concat({
 		"magick",
-		filepath,
+		unparse(filepath),
 		-- normalize fully transparent pixels
 		"-background #00000000",
 		"-alpha Background",
@@ -51,7 +52,7 @@ function common.writeSprites(filepath, w, h, ww)
 		"-border 0x0",
 		"-background #00000000",
 		"RGBA:-",
-		filepath,
+		unparse(filepath),
 	}, " "), "wb")
 end
 

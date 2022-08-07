@@ -4,7 +4,6 @@
 local fs = require "fs"
 local xmls = require "xmls"
 
--- warning: naive popen()
 local dir = args[2]
 if dir == nil then io.stderr:write("No directory specified\n") return end
 

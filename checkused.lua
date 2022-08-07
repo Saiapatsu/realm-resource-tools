@@ -5,7 +5,6 @@ local json = require "json"
 local xmls = require "xmls"
 local common = require "common"
 
--- warning: naive popen()
 local rootdir = common.rootdir
 local dir  = rootdir .. "src\\"
 
