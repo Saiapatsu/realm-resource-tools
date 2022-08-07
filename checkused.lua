@@ -1,12 +1,18 @@
--- checkused
+--[[
+checkused <dir>
+
+Reads all XMLs and spritesheets and splits them into "used" and "unused" spritesheets
+
+]]
 
 local fs = require "fs"
 local json = require "json"
 local xmls = require "xmls"
 local common = require "common"
 
-local rootdir = common.rootdir
-local dir  = rootdir .. "src\\"
+-- Parse arguments
+local script, dir = unpack(args)
+if dir == nil then print("No directory specified") return end
 
 local chunker = common.chunker
 local readSprites = common.readSprites

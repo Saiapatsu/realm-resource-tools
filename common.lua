@@ -2,9 +2,6 @@ local unparse = require "escape".unparse
 
 local common = {}
 
-local rootdir = args[1]:sub(1, args[1]:match("()[^\\]*$") - 1)
-common.rootdir = rootdir
-
 -- iterator that returns size bytes of a file each time
 function common.chunker(file, size)
 	return function(file, index)
