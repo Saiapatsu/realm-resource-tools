@@ -3,11 +3,9 @@
 -- indir: directory containing all xml files with objects and grounds in them
 -- outdir: all modified xmls get written in this directory, if not into indir
 
--- warning: not portable, given that pathsep is hardcoded for Windows here
-
 local xmls = require "xmls2"
 local fs = require "fs" -- from luvit
-local pathsep = "\\"
+local pathsep = require "path".sep
 
 -- Parse arguments
 local script, indir, outdir = unpack(args)
