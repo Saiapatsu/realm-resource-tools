@@ -8,19 +8,15 @@
 local fs = require "fs"
 local xmls = require "xmls2"
 local unparse = require "escape".unparse
-
-local function warnf(...)
-	io.stderr:write(string.format(...))
-	return io.stderr:write("\n")
-end
+local printf = require "common".printf
 
 -----------------------------------
 
 -- Parse arguments
 local script, xmldir, pathImageObjects, pathImageGrounds, method = unpack(args)
-if xmldir == nil then warnf("No directory specified") return end
-if pathImageObjects == nil then io.stderr:write("No objects image output path specified\n") return end
-if pathImageGrounds == nil then io.stderr:write("No grounds image output path specified\n") return end
+if xmldir == nil then print("No directory specified") return end
+if pathImageObjects == nil then print("No objects image output path specified") return end
+if pathImageGrounds == nil then print("No grounds image output path specified") return end
 
 local imgsize = 256
 local size = imgsize * imgsize
@@ -59,11 +55,11 @@ local function doTag(xml, types, what)
 	local index = transform(typenum)
 	
 	if typenum >= size then
-		warnf("out-of-bounds %s %s %s", what, type, id)
+		printf("out-of-bounds %s %s %s", what, type, id)
 	end
 	
 	if types[index] then
-		warnf("duplicate %s %s %s", what, type, id)
+		printf("duplicate %s %s %s", what, type, id)
 	else
 		types[index] = true
 	end
@@ -82,7 +78,7 @@ for filename in fs.scandirSync(xmldir) do
 	local xml = xmls.new(fs.readFileSync(path))
 	xml.path = path
 	local success, message = pcall(xml.doRoots, xml, tree)
-	if not success then warnf("error %s %s", xml:traceback(), message) end
+	if not success then printf("error %s %s", xml:traceback(), message) end
 end
 
 function visualize(types, pathImage)

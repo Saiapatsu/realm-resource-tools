@@ -6,6 +6,7 @@
 local xmls = require "xmls2"
 local fs = require "fs" -- from luvit
 local pathsep = require "path".sep
+local printf = require "common".printf
 
 -- Parse arguments
 local script, indir, outdir = unpack(args)
@@ -84,7 +85,7 @@ traverse(indir, function(path, dir, name)
 	-- set to fill in missing attributes from
 	xml.missingSet = {}
 	local success, message = pcall(xml.doRoots, xml, tree)
-	if not success then print(path, message) end
+	if not success then printf("error %s %s", xml:traceback(), message) end
 	if #xml.missingPos > 0 then table.insert(files, xml) end
 end)
 

@@ -2,6 +2,19 @@ local unparse = require "escape".unparse
 
 local common = {}
 
+-- luvit's console_write() fails when piping for some reason, just output to stdio manually
+function common.print(...)
+	local list = {...}
+	for k, v in ipairs(list) do list[k] = prettyPrint.dump(v) end
+	io.stderr:write(table.concat(list, "\t"))
+	return io.stderr:write("\n")
+end
+
+function common.printf(...)
+	io.stderr:write(string.format(...))
+	return io.stderr:write("\n")
+end
+
 -- iterator that returns size bytes of a file each time
 function common.chunker(file, size)
 	return function(file, index)
@@ -56,13 +69,6 @@ end
 -- sprite location to string
 function common.makePos(id, i)
 	return string.format("%s:%s", id, i)
-end
-
--- bypasses luvit pretty-print console_write() incompetence
-function common.print(...)
-	local list = {...}
-	for k, v in ipairs(list) do list[k] = tostring(v) end
-	io.stderr:write(table.concat(list, "\t") .. "\n")
 end
 
 return common
