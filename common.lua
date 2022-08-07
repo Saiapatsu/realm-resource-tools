@@ -1,9 +1,6 @@
 
 local common = {}
 
-local DEPTH = 4
-common.DEPTH = DEPTH
-
 local rootdir = args[1]:sub(1, args[1]:match("()[^\\]*$") - 1)
 common.rootdir = rootdir
 
@@ -20,7 +17,7 @@ end
 -- perform a callback for each wxh square in an image
 function common.readSprites(filepath, w, h, callback)
 	-- size of each sprite in bytes
-	local size = w * h * DEPTH
+	local size = w * h * 4
 	-- split image into sprites
 	local file = io.popen(table.concat({
 		"magick",

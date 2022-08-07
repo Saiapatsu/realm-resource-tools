@@ -9,7 +9,6 @@ local common = require "common"
 local rootdir = common.rootdir
 local dir  = rootdir .. "src\\"
 
-local DEPTH = common.DEPTH
 local chunker = common.chunker
 local readSprites = common.readSprites
 local writeSprites = common.writeSprites
@@ -150,7 +149,7 @@ local assets = json.parse(fs.readFileSync(dir .. "assets\\assets.json"))
 for id, asset in pairs(assets.images) do
 	if not usedFiles[id] then goto continue end
 	
-	local empty = string.rep("\0", asset.w * asset.h * DEPTH)
+	local empty = string.rep("\0", asset.w * asset.h * 4)
 	local fileUsed = writeSprites(dir .. "used\\" .. id .. ".png", asset.w, asset.h, 16)
 	local fileUnused = writeSprites(dir .. "unused\\" .. id .. ".png", asset.w, asset.h, 16)
 	
@@ -174,7 +173,7 @@ end
 for id, asset in pairs(assets.animatedchars) do
 	if not usedFiles[id] then goto continue end
 	
-	local empty = string.rep("\0", asset.w * asset.h * DEPTH)
+	local empty = string.rep("\0", asset.w * asset.h * 4)
 	local fileUsed = writeSprites(dir .. "used\\" .. id .. ".png", asset.w, asset.h, 1)
 	local fileUnused = writeSprites(dir .. "unused\\" .. id .. ".png", asset.w, asset.h, 1)
 	

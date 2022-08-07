@@ -9,7 +9,6 @@ local common = require "common"
 local srcdir = args[2] or "src"
 local dstdir = args[3] or "dst"
 
-local DEPTH = common.DEPTH
 local chunker = common.chunker
 local readSprites = common.readSprites
 local makePos = common.makePos
@@ -50,7 +49,7 @@ local srcPosToTile = {}
 local assets = json.parse(fs.readFileSync(srcdir .. "assets\\assets.json"))
 
 for id, asset in pairs(assets.images) do
-	local emptytile = string.rep("\0", asset.w * asset.h * DEPTH)
+	local emptytile = string.rep("\0", asset.w * asset.h * 4)
 	
 	readSprites(srcdir .. "assets\\" .. asset.file, asset.w, asset.h, function(i, tile)
 		srcamount()
@@ -81,7 +80,7 @@ local dstTileToPos = {}
 local assets = json.parse(fs.readFileSync(dstdir .. "assets\\assets.json"))
 
 for id, asset in pairs(assets.images) do
-	local emptytile = string.rep("\0", asset.w * asset.h * DEPTH)
+	local emptytile = string.rep("\0", asset.w * asset.h * 4)
 	
 	readSprites(dstdir .. "assets\\" .. asset.file, asset.w, asset.h, function(i, tile)
 		dstamount()
