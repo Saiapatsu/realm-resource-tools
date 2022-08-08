@@ -5,9 +5,8 @@
 -- pathImageGrounds: path to image that will display ground types
 -- method: if there is any 5th argument at all, then morton/z-curve transform type ids
 
-local fs = require "fs"
-local xmls = require "xmls2"
 local unparse = require "escape".unparse
+local forEachXml = require "./common".forEachXml
 local printf = require "./common".printf
 
 -----------------------------------
@@ -73,13 +72,7 @@ local tree = {
 }
 
 -- process all xmls
-for filename in fs.scandirSync(xmldir) do
-	local path = xmldir .. "\\" .. filename
-	local xml = xmls.new(fs.readFileSync(path))
-	xml.path = path
-	local success, message = pcall(xml.doRoots, xml, tree)
-	if not success then printf("error %s %s", xml:traceback(), message) end
-end
+forEachXml(xmldir, function(xml) return xml:doRoots(tree) end)
 
 function visualize(types, pathImage)
 	local file = io.popen(table.concat({
