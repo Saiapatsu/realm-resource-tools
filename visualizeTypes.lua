@@ -8,7 +8,7 @@
 local fs = require "fs"
 local xmls = require "xmls2"
 local unparse = require "escape".unparse
-local printf = require "common".printf
+local printf = require "./common".printf
 
 -----------------------------------
 

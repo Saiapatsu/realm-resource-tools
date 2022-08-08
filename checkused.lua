@@ -8,7 +8,7 @@ Reads all XMLs and spritesheets and splits them into "used" and "unused" sprites
 local fs = require "fs"
 local json = require "json"
 local xmls = require "xmls"
-local common = require "common"
+local common = require "./common"
 
 -- Parse arguments
 local script, dir = unpack(args)

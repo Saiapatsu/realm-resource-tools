@@ -5,8 +5,8 @@
 
 local xmls = require "xmls2"
 local fs = require "fs" -- from luvit
-local pathsep = require "path".sep
-local printf = require "common".printf
+local forEachXml = require "./common".forEachXml
+local printf = require "./common".printf
 
 -- Parse arguments
 local script, indir, outdir = unpack(args)
