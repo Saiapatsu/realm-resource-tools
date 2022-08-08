@@ -2,9 +2,9 @@
 -- Add missing type attributes to object and ground xmls
 -- indir: directory containing all xml files with objects and grounds in them
 -- outdir: all modified xmls get written in this directory, if not into indir
-
 local xmls = require "xmls2"
 local fs = require "fs" -- from luvit
+local pathsep = require "path".sep
 local forEachXml = require "./common".forEachXml
 local printf = require "./common".printf
 
@@ -12,26 +12,6 @@ local printf = require "./common".printf
 local script, indir, outdir = unpack(args)
 assert(indir, "No directory specified")
 outdir = outdir or indir
-
--- array of objects corresponding to files that need to be modified
-local files = {}
--- sets of types seen on any object and ground so far
-local typesObject = {[0x0000] = true}
-local typesGround = {}
-
--- recursive directory traversal, I have no clue why I implemented this
--- outdir does not account for it
-local traverse
-function traverse(dir, callback)
-	for name, type in fs.scandirSync(dir) do
-		local path = dir .. pathsep .. name
-		if type == "directory" then
-			traverse(path, callback)
-		elseif type == "file" then
-			callback(path, dir, name)
-		end
-	end
-end
 
 -- get next unset numeric key, set it and return it
 local function getNextFreeType(types)
@@ -44,29 +24,57 @@ local function getNextFreeType(types)
 	return i
 end
 
+local function opInsert(xml, types, pos)
+	local newtype = string.format("0x%04x", getNextFreeType(types))
+	table.insert(xml.rope, xml:cut(xml.pos, pos - 1))
+	table.insert(xml.rope, string.format(' type="%s"', newtype))
+	xml.pos = pos
+	printf("Inserted type %s at %s", newtype, xml:traceback(pos))
+end
+
+local function opReplace(xml, types, posA, posB)
+	local oldtype = xml:cut(posA, posB)
+	local newtype = string.format("0x%04x", getNextFreeType(types))
+	table.insert(xml.rope, xml:cut(xml.pos, posA - 1))
+	table.insert(xml.rope, newtype)
+	xml.pos = posB + 1
+	printf("Replaced type %s with %s at %s", oldtype, newtype, xml:traceback(posA))
+end
+
 -- process start tag of an Object or Ground
 local function doTag(xml, types)
-	local type, id
-	for k,v in xml:attrs() do
-		if     k == "type" then type = v
-		elseif k == "id"   then id = v end
+	local ta, tb, id
+	for k in xml:forKey() do
+		local va, vb = xml:getValuePos()
+		if     k == "type" then ta, tb = va, vb
+		elseif k == "id"   then id = xml:cut(va, vb)
+		end
 	end
 	if not id then
-		print("Tag with no id", xml.name, xml.pos)
-	elseif not type then
-		-- record the position to add a type to and which table to fill from
-		table.insert(xml.missingPos, xml.pos)
-		table.insert(xml.missingSet, types)
+		printf("Tag with no id at %s", xml:traceback())
+	elseif ta == nil then
+		-- no type found, insert type here (after the attr list)
+		table.insert(xml, {opInsert, types, xml.pos})
 	else
-		-- type exists, mark it
+		local type = xml:cut(ta, tb)
 		local typenum = tonumber(type)
-		if types[typenum] then
-			print("Tag with duplicate id", xml.name, types[typenum], type)
+		if typenum == nil then -- or shouldRegen()
+			-- type exists, but should be regenerated, replace its value
+			table.insert(xml, {opReplace, types, ta, tb})
+		else
+			-- type exists and is valid, mark it
+			if types[typenum] then
+				printf("Duplicate type %s at %s with %s", type, xml:traceback(), types[typenum])
+			end
+			types[typenum] = xml.path
 		end
-		types[typenum] = xml.name
 	end
 	xml:skipContent()
 end
+
+-- sets of types seen on any object and ground so far
+local typesObject = {[0x0000] = true}
+local typesGround = {}
 
 local tree = {
 	Objects = {Object = function(xml) return doTag(xml, typesObject) end},
@@ -74,33 +82,26 @@ local tree = {
 }
 
 -- find all xmls with missing types
-traverse(indir, function(path, dir, name)
-	local data = fs.readFileSync(path)
-	local xml = xmls.new(data)
-	xml.path = path
-	xml.dir = dir
-	xml.name = name
-	-- positions of attribute lists that don't have a type
-	xml.missingPos = {}
-	-- set to fill in missing attributes from
-	xml.missingSet = {}
-	local success, message = pcall(xml.doRoots, xml, tree)
-	if not success then printf("error %s %s", xml:traceback(), message) end
-	if #xml.missingPos > 0 then table.insert(files, xml) end
+local files = {}
+forEachXml(indir, function(xml)
+	xml:doRoots(tree)
+	-- if the file needs to be modified, store it for the next phase
+	if #xml > 0 then
+		table.insert(files, xml)
+	end
 end)
 
--- amend all xmls with missing types
+-- todo track and print how many of each action was taken
+-- how many types left as-is? how many added? how many invalid? how many regenerated?
+
+-- amend xmls with missing types
 for _, xml in pairs(files) do
-	local str = xml.str
-	local pos = 1
-	local rope = {}
-	for i, errpos in ipairs(xml.missingPos) do
-		local types = xml.missingSet[i]
-		table.insert(rope, str:sub(pos, errpos - 1))
-		table.insert(rope, string.format(' type="0x%04x"', getNextFreeType(types)))
-		pos = errpos
+	xml.pos = 1
+	xml.rope = {}
+	for i, action in ipairs(xml) do
+		local operation = action[1]
+		operation(xml, select(2, unpack(action)))
 	end
-	table.insert(rope, str:sub(pos))
-	-- print(table.concat(rope))
-	fs.writeFileSync(outdir .. pathsep .. xml.name, table.concat(rope))
+	table.insert(xml.rope, xml:cutEnd(xml.pos))
+	fs.writeFileSync(outdir .. pathsep .. xml.name, table.concat(xml.rope))
 end
