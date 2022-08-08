@@ -1,4 +1,7 @@
+local fs = require "fs"
+local pathsep = require "path".sep
 local unparse = require "escape".unparse
+local xmls = require "xmls2"
 
 local common = {}
 
@@ -64,6 +67,21 @@ function common.writeSprites(filepath, w, h, ww)
 		"RGBA:-",
 		unparse(filepath),
 	}, " "), "wb")
+end
+
+-- Attempt to operate on each XML file in a directory
+function common.forEachXml(dir, callback)
+	for name in fs.scandirSync(dir) do
+		local path = dir .. pathsep .. name
+		local xml = xmls.new(fs.readFileSync(path))
+		xml.dir = dir
+		xml.name = name
+		xml.path = path
+		local success, message = pcall(callback, xml)
+		if not success then
+			common.printf("error %s %s", xml:traceback(), message)
+		end
+	end
 end
 
 -- sprite location to string
