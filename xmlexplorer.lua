@@ -4,7 +4,7 @@
 local fs = require "fs"
 local xmls = require "xmls"
 
-local dir = args[2]
+local script, dir = unpack(args)
 if dir == nil then io.stderr:write("No directory specified\n") return end
 
 -----------------------------------
