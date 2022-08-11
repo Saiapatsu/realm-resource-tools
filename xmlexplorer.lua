@@ -2,7 +2,8 @@
 -- print the hierarchy and amount of all tags in a folder full of xml files
 
 local fs = require "fs"
-local xmls = require "xmls"
+local xmls = require "xmls2"
+local common = require "./common"
 
 local script, dir = unpack(args)
 if dir == nil then io.stderr:write("No directory specified\n") return end
@@ -32,31 +33,35 @@ local function get(tbl, key)
 	return item
 end
 
-for filename in fs.scandirSync(dir) do
-	local parser = xmls.parser(fs.readFileSync(dir .. "\\" .. filename))
+common.forEachXml(dir, function(xml)
 	local stack = {root}
-	
-	while true do
-		local type, value, loc = parser()
+	while true do --> text
+		local state = xml() --> ?
 		
-		if type == "tag" then
-			local tbl = get(stack[#stack], value)
-			table.insert(stack, tbl)
+		if state == xmls.stag then
+			local name = xml:cut(xml.pos, select(2, xml())) --> attr
+			local tbl = get(stack[#stack], name)
 			counts[tbl] = counts[tbl] + 1
-			
-			for attr, value in parser do
-				attr = "@" .. attr
-				local tbl = get(tbl, attr)
+			for k,v in xml:forAttr() do
+				local tbl = get(tbl, "@" .. k)
 				counts[tbl] = counts[tbl] + 1
+			end --> tagend
+			if select(2, xml()) then --> text
+				table.insert(stack, tbl)
 			end
 			
-		elseif type == nil then
-			if value == nil then break end -- end of document
+		elseif state == xmls.etag then
 			table.remove(stack)
+			xml() --> text
 			
+		elseif state == xmls.eof then
+			break
+			
+		else
+			xml() --> text
 		end
 	end
-end
+end)
 
 local function sortfunc(a, b)
 	local aa = string.sub(names[a], 1, 1) == "@"
