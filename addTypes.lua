@@ -26,7 +26,7 @@ end
 
 local function opInsert(xml, types, pos)
 	local newtype = string.format("0x%04x", getNextFreeType(types))
-	table.insert(xml.rope, xml:cut(xml.pos, pos - 1))
+	table.insert(xml.rope, xml:cut(xml.pos, pos))
 	table.insert(xml.rope, string.format(' type="%s"', newtype))
 	xml.pos = pos
 	printf("Inserted type %s at %s", newtype, xml:traceback(pos))
@@ -35,9 +35,9 @@ end
 local function opReplace(xml, types, posA, posB)
 	local oldtype = xml:cut(posA, posB)
 	local newtype = string.format("0x%04x", getNextFreeType(types))
-	table.insert(xml.rope, xml:cut(xml.pos, posA - 1))
+	table.insert(xml.rope, xml:cut(xml.pos, posA))
 	table.insert(xml.rope, newtype)
-	xml.pos = posB + 1
+	xml.pos = posB
 	printf("Replaced type %s with %s at %s", oldtype, newtype, xml:traceback(posA))
 end
 
