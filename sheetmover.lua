@@ -1,4 +1,44 @@
--- sheetmover <srcdir> <dstdir>
+--[[
+sheetmover <srcdir> <dstdir>
+Fixes references to sprites in xmls after rearranging sprites in sheets.
+
+srcdir and dstdir are shaped like this:
+	xml\
+		<xml files>
+	sheets\
+		<spritesheets>
+	assets.json
+
+assets.json is an ad-hoc conversion of AssetLoader.as (?) to JSON so as to avoid having to parse as3 in this script.
+It is shaped like this:
+{
+	"images": {
+		<asset name>: {
+			"file": <asset file name>,
+			"w": <tile width>,
+			"h": <tile height>
+		} ...
+	},
+	"animatedchars": {
+		<asset name>: {
+			"file": <asset file name>,
+			"w": <animation width>,
+			"h": <animation height>,
+			"sw": <tile width>,
+			"sh": <tile height>,
+			"facing": <"RIGHT"|"DOWN">,
+		} ...
+	}
+}
+For example, animatedchars.players.w is 56, h is 24, sw is 8, sh is 8 and facing is unused.
+
+Arrange your xmls, sheets and AssetLoader in the manner specified into srcdir.
+Duplicate srcdir, let it be dstdir.
+Make your rearrangements in dstdir. Do not accidentally modify/recolor, duplicate, add or lose any sprites.
+Run the script on the two directories.
+The ultimate output of the script will be in dstdir\xml, although only the modified xmls will be written.
+Replace your sheets with dstdir\sheets, your AssetLoader with dstdir\assets.json and paste dstdir\xml over your xmls.
+]]
 
 local fs = require "fs"
 local json = require "json"
