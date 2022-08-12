@@ -90,6 +90,7 @@ local srctile    = stat "srctile"    -- amount of non-empty tiles
 local dsttile    = stat "dsttile"    -- amount of non-empty tiles
 local srcuniq    = stat "srcuniq"    -- amount of unique tiles
 local dstuniq    = stat "dstuniq"    -- amount of unique tiles
+local srcdup     = stat "srcdup"     -- amount of duplicate tiles
 local dstdup     = stat "dstdup"     -- amount of duplicate tiles
 local dstcommon  = stat "dstcommon"  -- amount of tiles common with src
 local dstmoved   = stat "dstmoved"   -- amount of tiles common with src that have moved
@@ -104,6 +105,7 @@ local dstremoved = stat "dstremoved" -- amount of tiles only present in src
 print("Reading source images")
 local srcTileToPos = {}
 local srcPosToTile = {}
+local srcTileToDupGroup = {}
 
 local srcassets = json.parse(fs.readFileSync(srcdir .. pathsep .. "assets.json"))
 
@@ -125,6 +127,16 @@ local function doSrcAsset(id, asset)
 				srcuniq()
 				srcTileToPos[tile] = atom
 				
+			else
+				-- duplicate tile
+				srcdup()
+				local group = srcTileToDupGroup[tile]
+				if group == nil then
+					group = {}
+					srcTileToDupGroup[tile] = group
+					table.insert(group, srcTileToPos[tile])
+				end
+				table.insert(group, atom)
 			end
 		end
 	end)
@@ -138,11 +150,19 @@ for id, asset in pairs(srcassets.animatedchars) do
 	doSrcAsset(id, asset)
 end
 
+print("Duplicates:")
+print("-----------------------")
+for tile, group in pairs(srcTileToDupGroup) do
+	print(table.concat(group, "\n"))
+	print("-----------------------")
+end
+
 -----------------------------------
 
 print("Reading destination images")
 local srcPosToDstPos = {}
 local dstTileToPos = {}
+local dstTileToDupGroup = {}
 
 local dstassets = json.parse(fs.readFileSync(dstdir .. pathsep .. "assets.json"))
 
@@ -166,7 +186,13 @@ local function doDstAsset(id, asset)
 			else
 				-- duplicate tile
 				dstdup()
-				print("Duplicate tile: " .. atom .. " --- " .. dstTileToPos[tile])
+				local group = dstTileToDupGroup[tile]
+				if group == nil then
+					group = {}
+					dstTileToDupGroup[tile] = group
+					table.insert(group, dstTileToPos[tile])
+				end
+				table.insert(group, atom)
 			end
 			
 			if match then
@@ -196,6 +222,13 @@ end
 
 for id, asset in pairs(dstassets.animatedchars) do
 	doDstAsset(id, asset)
+end
+
+print("Duplicates:")
+print("-----------------------")
+for tile, group in pairs(dstTileToDupGroup) do
+	print(table.concat(group, "\n"))
+	print("-----------------------")
 end
 
 -- count tiles that are only in src, not in dst
