@@ -163,6 +163,30 @@ function common.readSprites(filepath, w, h, callback)
 	file:close()
 end
 
+-- add w, h to an array of tables {file = string}
+function common.getSizes(files, dir)
+	local rope = {}
+	for _,v in ipairs(files) do
+		table.insert(rope, unparse(dir .. pathsep .. v.file))
+	end
+	local file = io.popen(table.concat({
+		"magick",
+		"-format \"%w %h \"",
+		table.concat(rope, " "),
+		"-write info:-",
+		"null:",
+	}, " "), "rb")
+	local str = file:read("*a")
+	file:close()
+	print(str)
+	local i = 1
+	for w, h in str:gmatch("(%d+) (%d+) ") do
+		files[i].w = tonumber(w)
+		files[i].h = tonumber(h)
+		i = i + 1
+	end
+end
+
 -- return a file handle to write to
 function common.writeSprites(filepath, w, h, ww)
 	return io.popen(table.concat({
