@@ -72,6 +72,13 @@ local script, srcdir, dstdir = unpack(args)
 if srcdir == nil then warnf("No source directory specified") return end
 if dstdir == nil then warnf("No destination directory specified") return end
 
+local srcxml = srcdir .. pathsep .. "xml"
+local dstxml = dstdir .. pathsep .. "xml"
+local srcsheets = srcdir .. pathsep .. "sheets"
+local dstsheets = dstdir .. pathsep .. "sheets"
+local srcassets = srcdir .. pathsep .. "assets.json"
+local dstassets = dstdir .. pathsep .. "assets.json"
+
 -----------------------------------
 
 local stats = {}
@@ -108,12 +115,12 @@ local srcTileToPos = {}
 local srcPosToTile = {}
 local srcTileToDupGroup = {}
 
-local srcassets = json.parse(fs.readFileSync(srcdir .. pathsep .. "assets.json"))
+local srcjson = json.parse(fs.readFileSync(srcassets))
 
 local function doSrcAsset(id, asset)
 	local emptytile = string.rep("\0", asset.w * asset.h * 4)
 	
-	readSprites(srcdir .. pathsep .. "sheets" .. pathsep .. asset.file, asset.w, asset.h, function(i, tile)
+	readSprites(srcsheets .. pathsep .. asset.file, asset.w, asset.h, function(i, tile)
 		srcamount()
 		
 		if tile ~= emptytile then
@@ -143,11 +150,11 @@ local function doSrcAsset(id, asset)
 	end)
 end
 
-for id, asset in pairs(srcassets.images) do
+for id, asset in pairs(srcjson.images) do
 	doSrcAsset(id, asset)
 end
 
-for id, asset in pairs(srcassets.animatedchars) do
+for id, asset in pairs(srcjson.animatedchars) do
 	doSrcAsset(id, asset)
 end
 
@@ -165,12 +172,12 @@ local srcPosToDstPos = {}
 local dstTileToPos = {}
 local dstTileToDupGroup = {}
 
-local dstassets = json.parse(fs.readFileSync(dstdir .. pathsep .. "assets.json"))
+local dstjson = json.parse(fs.readFileSync(dstassets))
 
 local function doDstAsset(id, asset)
 	local emptytile = string.rep("\0", asset.w * asset.h * 4)
 	
-	readSprites(dstdir .. pathsep .. "sheets" .. pathsep .. asset.file, asset.w, asset.h, function(i, tile)
+	readSprites(dstsheets .. pathsep .. asset.file, asset.w, asset.h, function(i, tile)
 		dstamount()
 		
 		if tile ~= emptytile then
@@ -217,11 +224,11 @@ local function doDstAsset(id, asset)
 	end)
 end
 
-for id, asset in pairs(dstassets.images) do
+for id, asset in pairs(dstjson.images) do
 	doDstAsset(id, asset)
 end
 
-for id, asset in pairs(dstassets.animatedchars) do
+for id, asset in pairs(dstjson.animatedchars) do
 	doDstAsset(id, asset)
 end
 
@@ -286,7 +293,7 @@ local function Texture(xml)
 		printf("Moving %s to %s at %s", srcatom, dstatom, xml:traceback(pos))
 		local dstfile, dstindex = dstatom:match("^([^:]*):(.*)$")
 		-- if the file is not an animated character, convert index to hex
-		if dstassets.images[dstfile] then
+		if dstjson.images[dstfile] then
 			dstindex = string.format("0x%x", tonumber(dstindex))
 		end
 		if fa < ia then
@@ -350,15 +357,15 @@ local Root = {
 }
 
 -- ensure xml output directory exists
-if not fs.existsSync(dstdir .. pathsep .. "xml") then
-	fs.mkdirSync(dstdir .. pathsep .. "xml")
+if not fs.existsSync(dstxml) then
+	fs.mkdirSync(dstxml)
 end
 
-common.forEachXml(srcdir .. pathsep .. "xml", function(xml)
+common.forEachXml(srcxml, function(xml)
 	xml:doRoots(Root)
 	if #xml > 0 then
 		printf("Writing " .. xml.name)
 		replaceFinish(xml)
-		fs.writeFileSync(dstdir .. pathsep .. "xml" .. pathsep .. xml.name, table.concat(xml))
+		fs.writeFileSync(dstxml .. pathsep .. xml.name, table.concat(xml))
 	end
 end)
