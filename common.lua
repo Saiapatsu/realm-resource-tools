@@ -28,38 +28,50 @@ function common.makeTextureRoot(Texture, AnimatedTexture, RemoteTexture)
 		RandomTexture = RandomTexture,
 	}
 	
+	local Object = {
+		Texture = Texture,
+		RemoteTexture = RemoteTexture,
+		AnimatedTexture = AnimatedTexture,
+		RandomTexture = TextureOrAnimatedTexture,
+		AltTexture = TextureOrAnimatedTexture,
+		Portrait = TextureOrAnimatedTexture,
+		Animation = {
+			Frame = TextureOrRandomTexture,
+		},
+		Mask = Texture, -- dyes and textiles are masked; Tex1, Tex2 set the dye or cloth
+		-- wall textures
+		Top = TextureOrRandomTexture,
+		TTexture = Texture,
+		LineTexture = Texture,
+		CrossTexture = Texture,
+		LTexture = Texture,
+		DotTexture = Texture,
+		ShortLineTexture = Texture,
+	}
+	
+	local Ground = {
+		Texture = Texture,
+		RandomTexture = RandomTexture,
+		RemoteTexture = RemoteTexture,
+		-- top of the tile as seen on OT tiles or onsen steam
+		Top = TextureOrRandomTexture,
+		-- carpet edges
+		Edge = TextureOrRandomTexture,
+		InnerCorner = TextureOrRandomTexture,
+		Corner = TextureOrRandomTexture,
+	}
+	
+	local function infoInjector(tags)
+		return function(xml)
+			xml.basePos = xml.pos
+			xml.type, xml.id = common.typeid(xml)
+			return xml.doTags(tags)
+		end
+	end
+	
 	return {
-		Objects = {Object = {
-			Texture = Texture,
-			RemoteTexture = RemoteTexture,
-			AnimatedTexture = AnimatedTexture,
-			RandomTexture = TextureOrAnimatedTexture,
-			AltTexture = TextureOrAnimatedTexture,
-			Portrait = TextureOrAnimatedTexture,
-			Animation = {
-				Frame = TextureOrRandomTexture,
-			},
-			Mask = Texture, -- dyes and textiles are masked; Tex1, Tex2 set the dye or cloth
-			-- wall textures
-			Top = TextureOrRandomTexture,
-			TTexture = Texture,
-			LineTexture = Texture,
-			CrossTexture = Texture,
-			LTexture = Texture,
-			DotTexture = Texture,
-			ShortLineTexture = Texture,
-		}},
-		GroundTypes = {Ground = {
-			Texture = Texture,
-			RandomTexture = RandomTexture,
-			RemoteTexture = RemoteTexture,
-			-- top of the tile as seen on OT tiles or onsen steam
-			Top = TextureOrRandomTexture,
-			-- carpet edges
-			Edge = TextureOrRandomTexture,
-			InnerCorner = TextureOrRandomTexture,
-			Corner = TextureOrRandomTexture,
-		}},
+		Objects = {Object = infoInjector(Object)},
+		GroundTypes = {Ground = infoInjector(Ground)},
 	}
 end
 
