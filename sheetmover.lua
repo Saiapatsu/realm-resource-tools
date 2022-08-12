@@ -139,22 +139,29 @@ print("Updating data")
 
 local rope, cursor
 
-function Texture(parser)
-	xmls.wasteAttr(parser)
+function Texture(xml)
+	xml:skipAttr()
 	-- <Texture><File>file</File><Index>0</Index></Texture>
-	-- A, B, C, D are start of text, etag, text, etag respectively
-	local lkey, file , locA, locA, locB = assert(xmls.kvtags(parser))
-	local rkey, index, locC, locC, locD = assert(xmls.kvtags(parser))
-	assert(xmls.tags(parser) == nil)
-	-- might as well enforce an order if they're all like this in real data
-	assert(lkey == "File")
-	assert(rkey == "Index")
-	-- print(lkey, lvalue, rkey, rvalue)
+	local fa, fb, ia, ib
+	for name in xml:forTag() do
+		xml:skipAttr()
+		if name == "File" then
+			fa, fb, opening = xml:getInnerPos()
+			assert(opening)
+		elseif name == "Index" then
+			ia, ib, opening = xml:getInnerPos()
+			assert(opening)
+		else
+			error("Unexpected tag in a Texture")
+		end
+	end
+	local file = xml:cut(fa, fb)
+	local index = xml:cut(ia, ib)
 	local atom = makePos(file, tonumber(index))
 	if srcPosToDstPos[atom] then
 		print("Moving " .. atom .. " to " .. srcPosToDstPos[atom])
-		-- table.insert(rope, string.sub(parser.str, cursor, locA - 1)) -- up to text
-		-- table.insert(rope, string.sub(parser.str, locB, locC - 1)) -- between texts
+		-- table.insert(rope, string.sub(xml.str, cursor, locA - 1)) -- up to text
+		-- table.insert(rope, string.sub(xml.str, locB, locC - 1)) -- between texts
 		-- cursor = locD
 	end
 end
@@ -162,6 +169,9 @@ end
 -- xmls.children{Texture = Texture, Animation = xmls.children{}}
 -- xmls.descendants{Texture = Texture}
 -- maybe propagate varargs??
+
+-- AnimatedTexture is unimplemented
+-- and a bunch of things are missing from this Root
 
 local Root = {
 	Objects = {
@@ -179,10 +189,6 @@ local Root = {
 	GroundTypes = {},
 }
 
-for filename in fs.scandirSync(srcdir .. "data") do
-	local parser = xmls.parser(fs.readFileSync(srcdir .. "data\\" .. filename))
-	
-	rope, cursor = {}, 1
-	xmls.scan(parser, Root)
-	-- concat rope, output
-end
+common.forEachXml(srcdir .. "data", function(xml)
+	xml:doRoots(Root)
+end)
