@@ -73,6 +73,7 @@ local srctile    = stat "srctile"    -- amount of non-empty tiles
 local dsttile    = stat "dsttile"    -- amount of non-empty tiles
 local srcuniq    = stat "srcuniq"    -- amount of unique tiles
 local dstuniq    = stat "dstuniq"    -- amount of unique tiles
+local dstdup     = stat "dstdup"     -- amount of duplicate tiles
 local dstcommon  = stat "dstcommon"  -- amount of tiles common with src
 local dstmoved   = stat "dstmoved"   -- amount of tiles common with src that have moved
 local dstadded   = stat "dstadded"   -- amount of tiles only present in dst
@@ -145,6 +146,10 @@ local function doDstAsset(id, asset)
 				-- unique tile
 				dstuniq()
 				dstTileToPos[tile] = atom
+			else
+				-- duplicate tile
+				dstdup()
+				print("Duplicate tile: " .. atom .. " --- " .. dstTileToPos[tile])
 			end
 			
 			if match then
