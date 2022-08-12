@@ -140,17 +140,17 @@ print("Updating data")
 
 local rope, cursor
 
-function replace(xml, a, b, str)
+local function replace(xml, a, b, str)
 	table.insert(xml, xml:cut(xml.replacePos or 1, a))
 	table.insert(xml, str)
 	xml.replacePos = b
 end
 
-function replaceFinish(xml)
+local function replaceFinish(xml)
 	table.insert(xml, xml:cutEnd(xml.replacePos))
 end
 
-function Texture(xml)
+local function Texture(xml)
 	local pos = xml.pos
 	xml:skipAttr()
 	-- <Texture><File>file</File><Index>0</Index></Texture>
