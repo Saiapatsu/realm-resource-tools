@@ -46,12 +46,12 @@ print("Reading source images")
 local srcTileToPos = {}
 local srcPosToTile = {}
 
-local srcassets = json.parse(fs.readFileSync(srcdir .. "assets\\assets.json"))
+local srcassets = json.parse(fs.readFileSync(srcdir .. "assets.json"))
 
 local function doSrcAsset(id, asset)
 	local emptytile = string.rep("\0", asset.w * asset.h * 4)
 	
-	readSprites(srcdir .. "assets\\" .. asset.file, asset.w, asset.h, function(i, tile)
+	readSprites(srcdir .. "sheets\\" .. asset.file, asset.w, asset.h, function(i, tile)
 		srcamount()
 		
 		if tile ~= emptytile then
@@ -85,12 +85,12 @@ print("Reading destination images")
 local srcPosToDstPos = {}
 local dstTileToPos = {}
 
-local dstassets = json.parse(fs.readFileSync(dstdir .. "assets\\assets.json"))
+local dstassets = json.parse(fs.readFileSync(dstdir .. "assets.json"))
 
 local function doDstAsset(id, asset)
 	local emptytile = string.rep("\0", asset.w * asset.h * 4)
 	
-	readSprites(dstdir .. "assets\\" .. asset.file, asset.w, asset.h, function(i, tile)
+	readSprites(dstdir .. "sheets\\" .. asset.file, asset.w, asset.h, function(i, tile)
 		dstamount()
 		
 		if tile ~= emptytile then
@@ -252,11 +252,11 @@ local Root = {
 	}},
 }
 
-common.forEachXml(srcdir .. "data", function(xml)
+common.forEachXml(srcdir .. "xml", function(xml)
 	xml:doRoots(Root)
 	if #xml > 0 then
 		print("Writing " .. xml.name)
 		replaceFinish(xml)
-		fs.writeFileSync(dstdir .. "data\\" .. xml.name, table.concat(xml))
+		fs.writeFileSync(dstdir .. "xml\\" .. xml.name, table.concat(xml))
 	end
 end)
