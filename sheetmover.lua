@@ -1,4 +1,4 @@
--- sheetmover [<srcdir>] [<dstdir>]
+-- sheetmover <srcdir> <dstdir>
 
 local fs = require "fs"
 local json = require "json"
@@ -10,8 +10,9 @@ local makePos = common.makePos
 local printf = common.printf
 local pathsep = common.pathsep
 
-local srcdir = args[2] or "src"
-local dstdir = args[3] or "dst"
+local script, srcdir, dstdir = unpack(args)
+if srcdir == nil then print("No source directory specified") return end
+if dstdir == nil then print("No destination directory specified") return end
 
 -----------------------------------
 
