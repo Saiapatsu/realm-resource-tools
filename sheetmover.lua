@@ -46,9 +46,9 @@ print("Reading source images")
 local srcTileToPos = {}
 local srcPosToTile = {}
 
-local assets = json.parse(fs.readFileSync(srcdir .. "assets\\assets.json"))
+local srcassets = json.parse(fs.readFileSync(srcdir .. "assets\\assets.json"))
 
-for id, asset in pairs(assets.images) do
+local function doSrcAsset(id, asset)
 	local emptytile = string.rep("\0", asset.w * asset.h * 4)
 	
 	readSprites(srcdir .. "assets\\" .. asset.file, asset.w, asset.h, function(i, tile)
@@ -71,15 +71,23 @@ for id, asset in pairs(assets.images) do
 	end)
 end
 
+for id, asset in pairs(srcassets.images) do
+	doSrcAsset(id, asset)
+end
+
+for id, asset in pairs(srcassets.animatedchars) do
+	doSrcAsset(id, asset)
+end
+
 -----------------------------------
 
 print("Reading destination images")
 local srcPosToDstPos = {}
 local dstTileToPos = {}
 
-local assets = json.parse(fs.readFileSync(dstdir .. "assets\\assets.json"))
+local dstassets = json.parse(fs.readFileSync(dstdir .. "assets\\assets.json"))
 
-for id, asset in pairs(assets.images) do
+local function doDstAsset(id, asset)
 	local emptytile = string.rep("\0", asset.w * asset.h * 4)
 	
 	readSprites(dstdir .. "assets\\" .. asset.file, asset.w, asset.h, function(i, tile)
@@ -117,6 +125,14 @@ for id, asset in pairs(assets.images) do
 			end
 		end
 	end)
+end
+
+for id, asset in pairs(dstassets.images) do
+	doDstAsset(id, asset)
+end
+
+for id, asset in pairs(dstassets.animatedchars) do
+	doDstAsset(id, asset)
 end
 
 -- count tiles that are only in src, not in dst
@@ -172,7 +188,10 @@ local function Texture(xml)
 	if dstatom then
 		printf("Moving %s to %s at %s", srcatom, dstatom, xml:traceback(pos))
 		local dstfile, dstindex = dstatom:match("^([^:]*):(.*)$")
-		dstindex = string.format("0x%x", tonumber(dstindex))
+		-- if the file is not an animated character, convert index to hex
+		if dstassets.images[dstfile] then
+			dstindex = string.format("0x%x", tonumber(dstindex))
+		end
 		if fa < ia then
 			replace(xml, fa, fb, dstfile)
 			replace(xml, ia, ib, dstindex)
@@ -183,12 +202,7 @@ local function Texture(xml)
 	end
 end
 
--- xmls.children{Texture = Texture, Animation = xmls.children{}}
--- xmls.descendants{Texture = Texture}
--- maybe propagate varargs??
-
--- AnimatedTexture is unimplemented
--- and a bunch of things are missing from this Root
+local AnimatedTexture = Texture
 
 local TextureOrAnimatedTexture = {
 	Texture = Texture,
