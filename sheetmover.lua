@@ -139,6 +139,16 @@ print("Updating data")
 
 local rope, cursor
 
+function replace(xml, a, b, str)
+	table.insert(xml, xml:cut(xml.replacePos or 1, a))
+	table.insert(xml, str)
+	xml.replacePos = b
+end
+
+function replaceFinish(xml)
+	table.insert(xml, xml:cutEnd(xml.replacePos))
+end
+
 function Texture(xml)
 	xml:skipAttr()
 	-- <Texture><File>file</File><Index>0</Index></Texture>
@@ -155,14 +165,19 @@ function Texture(xml)
 			error("Unexpected tag in a Texture")
 		end
 	end
-	local file = xml:cut(fa, fb)
-	local index = xml:cut(ia, ib)
-	local atom = makePos(file, tonumber(index))
-	if srcPosToDstPos[atom] then
-		print("Moving " .. atom .. " to " .. srcPosToDstPos[atom])
-		-- table.insert(rope, string.sub(xml.str, cursor, locA - 1)) -- up to text
-		-- table.insert(rope, string.sub(xml.str, locB, locC - 1)) -- between texts
-		-- cursor = locD
+	local srcatom = makePos(xml:cut(fa, fb), tonumber(xml:cut(ia, ib)))
+	local dstatom = srcPosToDstPos[srcatom]
+	if dstatom then
+		print("Moving " .. srcatom .. " to " .. dstatom)
+		local dstfile, dstindex = dstatom:match("^([^:]*):(.*)$")
+		dstindex = string.format("0x%x", tonumber(dstindex))
+		if fa < ia then
+			replace(xml, fa, fb, dstfile)
+			replace(xml, ia, ib, dstindex)
+		else
+			replace(xml, ia, ib, dstindex)
+			replace(xml, fa, fb, dstfile)
+		end
 	end
 end
 
@@ -191,4 +206,9 @@ local Root = {
 
 common.forEachXml(srcdir .. "data", function(xml)
 	xml:doRoots(Root)
+	if #xml > 0 then
+		print("Modified " .. xml.path)
+		replaceFinish(xml)
+		fs.writeFileSync(dstdir .. "data\\" .. xml.name, table.concat(xml))
+	end
 end)
