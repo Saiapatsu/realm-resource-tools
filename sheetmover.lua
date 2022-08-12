@@ -11,6 +11,7 @@ local dstdir = args[3] or "dst"
 local chunker = common.chunker
 local readSprites = common.readSprites
 local makePos = common.makePos
+local printf = common.printf
 
 -----------------------------------
 
@@ -150,6 +151,7 @@ function replaceFinish(xml)
 end
 
 function Texture(xml)
+	local pos = xml.pos
 	xml:skipAttr()
 	-- <Texture><File>file</File><Index>0</Index></Texture>
 	local fa, fb, ia, ib
@@ -168,7 +170,7 @@ function Texture(xml)
 	local srcatom = makePos(xml:cut(fa, fb), tonumber(xml:cut(ia, ib)))
 	local dstatom = srcPosToDstPos[srcatom]
 	if dstatom then
-		print("Moving " .. srcatom .. " to " .. dstatom)
+		printf("Moving %s to %s at %s", srcatom, dstatom, xml:traceback(pos))
 		local dstfile, dstindex = dstatom:match("^([^:]*):(.*)$")
 		dstindex = string.format("0x%x", tonumber(dstindex))
 		if fa < ia then
@@ -239,7 +241,7 @@ local Root = {
 common.forEachXml(srcdir .. "data", function(xml)
 	xml:doRoots(Root)
 	if #xml > 0 then
-		print("Modified " .. xml.path)
+		print("Writing " .. xml.name)
 		replaceFinish(xml)
 		fs.writeFileSync(dstdir .. "data\\" .. xml.name, table.concat(xml))
 	end
