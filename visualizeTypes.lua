@@ -6,8 +6,8 @@
 -- method: if there is any 5th argument at all, then morton/z-curve transform type ids
 
 local unparse = require "escape".unparse
-local forEachXml = require "./common".forEachXml
-local printf = require "./common".printf
+local common = require "./common"
+local printf = common.printf
 
 -----------------------------------
 
@@ -41,13 +41,7 @@ local typesObject = {}
 local typesGround = {}
 
 local function doTag(xml, types, what)
-	local type
-	local id
-	for k,v in xml:attrs() do
-		if     k == "type" then type = v
-		elseif k == "id"   then id   = v
-		end
-	end
+	local type, id = common.typeid(xml)
 	
 	local typenum = tonumber(type)
 	-- pixel index in the output image
@@ -72,7 +66,7 @@ local tree = {
 }
 
 -- process all xmls
-forEachXml(xmldir, function(xml) return xml:doRoots(tree) end)
+common.forEachXml(xmldir, function(xml) return xml:doRoots(tree) end)
 
 function visualize(types, pathImage)
 	local file = io.popen(table.concat({

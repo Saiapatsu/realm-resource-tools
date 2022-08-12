@@ -44,20 +44,13 @@ end
 
 -- process start tag of an Object or Ground
 local function doTag(xml, types)
-	local ta, tb, id
-	for k in xml:forKey() do
-		local va, vb = xml:getValuePos()
-		if     k == "type" then ta, tb = va, vb
-		elseif k == "id"   then id = xml:cut(va, vb)
-		end
-	end
+	local type, id, ta, tb = common.typeid(xml)
 	if not id then
 		printf("Tag with no id at %s", xml:traceback())
-	elseif ta == nil then
+	elseif type == nil then
 		-- no type found, insert type here (after the attr list)
 		table.insert(xml, {opInsert, types, xml.pos})
 	else
-		local type = xml:cut(ta, tb)
 		local typenum = tonumber(type)
 		if typenum == nil then -- or shouldRegen()
 			-- type exists, but should be regenerated, replace its value

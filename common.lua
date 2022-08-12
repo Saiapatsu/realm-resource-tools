@@ -7,6 +7,92 @@ local common = {}
 
 common.pathsep = pathsep
 
+function common.makeTextureRoot(Texture, AnimatedTexture, RemoteTexture)
+	-- todo: make these follow the actual logic used in the client
+	-- (i.e. TextureDataConcrete)
+	
+	local TextureOrAnimatedTexture = {
+		Texture = Texture,
+		RemoteTexture = RemoteTexture,
+		AnimatedTexture = AnimatedTexture,
+	}
+	
+	local RandomTexture = {
+		Texture = Texture,
+		RemoteTexture = RemoteTexture,
+	}
+	
+	local TextureOrRandomTexture = {
+		Texture = Texture,
+		RemoteTexture = RemoteTexture,
+		RandomTexture = RandomTexture,
+	}
+	
+	return {
+		Objects = {Object = {
+			Texture = Texture,
+			RemoteTexture = RemoteTexture,
+			AnimatedTexture = AnimatedTexture,
+			RandomTexture = TextureOrAnimatedTexture,
+			AltTexture = TextureOrAnimatedTexture,
+			Portrait = TextureOrAnimatedTexture,
+			Animation = {
+				Frame = TextureOrRandomTexture,
+			},
+			Mask = Texture, -- dyes and textiles are masked; Tex1, Tex2 set the dye or cloth
+			-- wall textures
+			Top = TextureOrRandomTexture,
+			TTexture = Texture,
+			LineTexture = Texture,
+			CrossTexture = Texture,
+			LTexture = Texture,
+			DotTexture = Texture,
+			ShortLineTexture = Texture,
+		}},
+		GroundTypes = {Ground = {
+			Texture = Texture,
+			RandomTexture = RandomTexture,
+			RemoteTexture = RemoteTexture,
+			-- top of the tile as seen on OT tiles or onsen steam
+			Top = TextureOrRandomTexture,
+			-- carpet edges
+			Edge = TextureOrRandomTexture,
+			InnerCorner = TextureOrRandomTexture,
+			Corner = TextureOrRandomTexture,
+		}},
+	}
+end
+
+-- use at TagEnd of <Texture> or <AnimatedTexture>
+function common.fileindex(xml)
+	local fa, fb, ia, ib
+	for name in xml:forTag() do
+		xml:skipAttr()
+		if name == "File" then
+			fa, fb, opening = xml:getContentPos()
+			assert(opening)
+		elseif name == "Index" then
+			ia, ib, opening = xml:getContentPos()
+			assert(opening)
+		else
+			error("Unexpected tag in a Texture")
+		end
+	end
+	return fa and xml:cut(fa, fb), ia and xml:cut(ia, ib), fa, fb, ia, ib
+end
+
+-- use at Attr of <Object>
+function common.typeid(xml)
+	local ta, tb, ia, ib
+	for k in xml:forKey() do
+		local va, vb = xml:getValuePos()
+		if     k == "type" then ta, tb = va, vb
+		elseif k == "id"   then ia, ib = va, vb
+		end
+	end
+	return ta and xml:cut(ta, tb), ia and xml:cut(ia, ib), ta, tb, ia, ib
+end
+
 -- luvit's console_write() fails when piping for some reason, just output to stdio manually
 function common.print(...)
 	local list = {...}

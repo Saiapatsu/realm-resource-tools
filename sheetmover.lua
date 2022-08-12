@@ -274,20 +274,8 @@ local function Texture(xml)
 	local pos = xml.pos
 	xml:skipAttr()
 	-- <Texture><File>file</File><Index>0</Index></Texture>
-	local fa, fb, ia, ib
-	for name in xml:forTag() do
-		xml:skipAttr()
-		if name == "File" then
-			fa, fb, opening = xml:getContentPos()
-			assert(opening)
-		elseif name == "Index" then
-			ia, ib, opening = xml:getContentPos()
-			assert(opening)
-		else
-			error("Unexpected tag in a Texture")
-		end
-	end
-	local srcatom = makePos(xml:cut(fa, fb), tonumber(xml:cut(ia, ib)))
+	local file, index, fa, fb, ia, ib = common.fileindex(xml)
+	local srcatom = makePos(file, tonumber(index))
 	local dstatom = srcPosToDstPos[srcatom]
 	if dstatom then
 		printf("Moving %s to %s at %s", srcatom, dstatom, xml:traceback(pos))
@@ -306,55 +294,7 @@ local function Texture(xml)
 	end
 end
 
-local AnimatedTexture = Texture
-
-local TextureOrAnimatedTexture = {
-	Texture = Texture,
-	AnimatedTexture = AnimatedTexture,
-	-- RemoteTexture,
-}
-
-local RandomTexture = {
-	Texture = Texture,
-}
-
-local TextureOrRandomTexture = {
-	Texture = Texture,
-	RandomTexture = RandomTexture,
-}
-
-local Root = {
-	Objects = {Object = {
-		Texture = Texture,
-		AnimatedTexture = AnimatedTexture,
-		RandomTexture = TextureOrAnimatedTexture,
-		AltTexture = TextureOrAnimatedTexture,
-		Portrait = TextureOrAnimatedTexture,
-		Animation = {
-			Frame = TextureOrRandomTexture,
-		},
-		-- RemoteTexture,
-		Mask = Texture, -- dyes and textiles are masked; Tex1, Tex2 set the dye or cloth
-		-- wall textures
-		Top = TextureOrRandomTexture,
-		TTexture = Texture,
-		LineTexture = Texture,
-		CrossTexture = Texture,
-		LTexture = Texture,
-		DotTexture = Texture,
-		ShortLineTexture = Texture,
-	}},
-	GroundTypes = {Ground = {
-		Texture = Texture,
-		RandomTexture = RandomTexture,
-		-- top of the tile as seen on OT tiles or onsen steam
-		Top = TextureOrRandomTexture,
-		-- carpet edges
-		Edge = TextureOrRandomTexture,
-		InnerCorner = TextureOrRandomTexture,
-		Corner = TextureOrRandomTexture,
-	}},
-}
+local Root = common.makeTextureRoot(Texture, Texture)
 
 -- ensure xml output directory exists
 if not fs.existsSync(dstxml) then
