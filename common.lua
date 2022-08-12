@@ -65,7 +65,7 @@ function common.makeTextureRoot(Texture, AnimatedTexture, RemoteTexture)
 		return function(xml)
 			xml.basePos = xml.pos
 			xml.type, xml.id = common.typeid(xml)
-			return xml.doTags(tags)
+			return xml:doTags(tags)
 		end
 	end
 	
@@ -75,7 +75,8 @@ function common.makeTextureRoot(Texture, AnimatedTexture, RemoteTexture)
 	}
 end
 
--- use at TagEnd of <Texture> or <AnimatedTexture>
+-- Use at TagEnd of <Texture> or <AnimatedTexture>
+-- Transition to Text
 function common.fileindex(xml)
 	local fa, fb, ia, ib
 	for name in xml:forTag() do
@@ -93,7 +94,8 @@ function common.fileindex(xml)
 	return fa and xml:cut(fa, fb), ia and xml:cut(ia, ib), fa, fb, ia, ib
 end
 
--- use at Attr of <Object>
+-- Use at Attr of <Object>
+-- Transition to TagEnd
 function common.typeid(xml)
 	local ta, tb, ia, ib
 	for k in xml:forKey() do
