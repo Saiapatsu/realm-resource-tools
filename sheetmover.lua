@@ -22,6 +22,7 @@ It is shaped like this:
 	"animatedchars": {
 		<asset name>: {
 			"file": <asset file name>,
+			"mask": <null|asset file name>,
 			"w": <animation width>,
 			"h": <animation height>,
 			"sw": <tile width>,
@@ -30,14 +31,30 @@ It is shaped like this:
 		} ...
 	}
 }
-For example, animatedchars.players.w is 56, h is 24, sw is 8, sh is 8 and facing is unused.
+For example, animatedchars.players.w is 56, h is 24, sw is 8, sh is 8.
+facing and mask are unused.
 
 Arrange your xmls, sheets and AssetLoader in the manner specified into srcdir.
 Duplicate srcdir, let it be dstdir.
-Make your rearrangements in dstdir. Do not accidentally modify/recolor, duplicate, add or lose any sprites.
+Make your rearrangements in dstdir\sheets.
+	Do not accidentally modify/recolor, duplicate, add or lose any sprites.
+	You can add new sheets if you create new assets for them in assets.json.
 Run the script on the two directories.
-The ultimate output of the script will be in dstdir\xml, although only the modified xmls will be written.
 Replace your sheets with dstdir\sheets, your AssetLoader with dstdir\assets.json and paste dstdir\xml over your xmls.
+	The ultimate output of the script will be in dstdir\xml, although only the modified xmls will be written.
+
+The script prefers to not modify sprite references if it's the same sprite at the same position in both src and dst.
+
+The script might not play nice with duplicate tiles, preferring to choose a different sprite than where you intended to move a tile to.
+I don't know the actual behavior because this script hasn't been battle-tested yet.
+Ideally, it should point to the "new" position of the sprite, not to any other "stale" duplicate sprites. (That's a TODO.)
+
+The script also warns about duplicate sprites.
+A lot of them will come from sheets with white backgrounds, such as textiles and the silly faces Kabam devs left among the sheets, which should just be removed from AssetLoader.
+
+This script does not account for animated textures' masks yet.
+You're responsible for keeping the masks in sync.
+In the future, the script could attempt move the masks around when the sheet is modified.
 ]]
 
 local fs = require "fs"
