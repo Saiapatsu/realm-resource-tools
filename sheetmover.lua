@@ -188,20 +188,52 @@ end
 -- AnimatedTexture is unimplemented
 -- and a bunch of things are missing from this Root
 
+local TextureOrAnimatedTexture = {
+	Texture = Texture,
+	AnimatedTexture = AnimatedTexture,
+	-- RemoteTexture,
+}
+
+local RandomTexture = {
+	Texture = Texture,
+}
+
+local TextureOrRandomTexture = {
+	Texture = Texture,
+	RandomTexture = RandomTexture,
+}
+
 local Root = {
-	Objects = {
-		Object = {
-			Texture = Texture,
-			AnimatedTexture = AnimatedTexture,
-			Animation = {
-				Frame = {
-					Texture = Texture,
-					AnimatedTexture = AnimatedTexture,
-				},
-			},
+	Objects = {Object = {
+		Texture = Texture,
+		AnimatedTexture = AnimatedTexture,
+		RandomTexture = TextureOrAnimatedTexture,
+		AltTexture = TextureOrAnimatedTexture,
+		Portrait = TextureOrAnimatedTexture,
+		Animation = {
+			Frame = TextureOrRandomTexture,
 		},
-	},
-	GroundTypes = {},
+		-- RemoteTexture,
+		Mask = Texture, -- dyes and textiles are masked; Tex1, Tex2 set the dye or cloth
+		-- wall textures
+		Top = TextureOrRandomTexture,
+		TTexture = Texture,
+		LineTexture = Texture,
+		CrossTexture = Texture,
+		LTexture = Texture,
+		DotTexture = Texture,
+		ShortLineTexture = Texture,
+	}},
+	GroundTypes = {Ground = {
+		Texture = Texture,
+		RandomTexture = RandomTexture,
+		-- top of the tile as seen on OT tiles or onsen steam
+		Top = TextureOrRandomTexture,
+		-- carpet edges
+		Edge = TextureOrRandomTexture,
+		InnerCorner = TextureOrRandomTexture,
+		Corner = TextureOrRandomTexture,
+	}},
 }
 
 common.forEachXml(srcdir .. "data", function(xml)
