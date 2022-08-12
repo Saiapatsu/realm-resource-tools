@@ -4,14 +4,14 @@ local fs = require "fs"
 local json = require "json"
 local xmls = require "xmls"
 local common = require "./common"
-
-local srcdir = args[2] or "src"
-local dstdir = args[3] or "dst"
-
 local chunker = common.chunker
 local readSprites = common.readSprites
 local makePos = common.makePos
 local printf = common.printf
+local pathsep = common.pathsep
+
+local srcdir = args[2] or "src"
+local dstdir = args[3] or "dst"
 
 -----------------------------------
 
@@ -46,12 +46,12 @@ print("Reading source images")
 local srcTileToPos = {}
 local srcPosToTile = {}
 
-local srcassets = json.parse(fs.readFileSync(srcdir .. "assets.json"))
+local srcassets = json.parse(fs.readFileSync(srcdir .. pathsep .. "assets.json"))
 
 local function doSrcAsset(id, asset)
 	local emptytile = string.rep("\0", asset.w * asset.h * 4)
 	
-	readSprites(srcdir .. "sheets\\" .. asset.file, asset.w, asset.h, function(i, tile)
+	readSprites(srcdir .. pathsep .. "sheets" .. pathsep .. asset.file, asset.w, asset.h, function(i, tile)
 		srcamount()
 		
 		if tile ~= emptytile then
@@ -85,12 +85,12 @@ print("Reading destination images")
 local srcPosToDstPos = {}
 local dstTileToPos = {}
 
-local dstassets = json.parse(fs.readFileSync(dstdir .. "assets.json"))
+local dstassets = json.parse(fs.readFileSync(dstdir .. pathsep .. "assets.json"))
 
 local function doDstAsset(id, asset)
 	local emptytile = string.rep("\0", asset.w * asset.h * 4)
 	
-	readSprites(dstdir .. "sheets\\" .. asset.file, asset.w, asset.h, function(i, tile)
+	readSprites(dstdir .. pathsep .. "sheets" .. pathsep .. asset.file, asset.w, asset.h, function(i, tile)
 		dstamount()
 		
 		if tile ~= emptytile then
@@ -252,11 +252,11 @@ local Root = {
 	}},
 }
 
-common.forEachXml(srcdir .. "xml", function(xml)
+common.forEachXml(srcdir .. pathsep .. "xml", function(xml)
 	xml:doRoots(Root)
 	if #xml > 0 then
 		print("Writing " .. xml.name)
 		replaceFinish(xml)
-		fs.writeFileSync(dstdir .. "xml\\" .. xml.name, table.concat(xml))
+		fs.writeFileSync(dstdir .. pathsep .. "xml" .. pathsep .. xml.name, table.concat(xml))
 	end
 end)

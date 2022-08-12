@@ -4,9 +4,10 @@
 -- outdir: all modified xmls get written in this directory, if not into indir
 local xmls = require "xmls2"
 local fs = require "fs" -- from luvit
-local pathsep = require "path".sep
-local forEachXml = require "./common".forEachXml
-local printf = require "./common".printf
+local common = require "./common"
+local pathsep = common.pathsep
+local forEachXml = common.forEachXml
+local printf = common.printf
 
 -- Parse arguments
 local script, indir, outdir = unpack(args)

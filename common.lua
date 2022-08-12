@@ -5,6 +5,8 @@ local xmls = require "xmls2"
 
 local common = {}
 
+common.pathsep = pathsep
+
 -- luvit's console_write() fails when piping for some reason, just output to stdio manually
 function common.print(...)
 	local list = {...}
