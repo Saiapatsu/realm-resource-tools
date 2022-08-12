@@ -253,6 +253,11 @@ local Root = {
 	}},
 }
 
+-- ensure xml output directory exists
+if not fs.existsSync(dstdir .. pathsep .. "xml") then
+	fs.mkdirSync(dstdir .. pathsep .. "xml")
+end
+
 common.forEachXml(srcdir .. pathsep .. "xml", function(xml)
 	xml:doRoots(Root)
 	if #xml > 0 then
