@@ -271,10 +271,10 @@ local function Texture(xml)
 	for name in xml:forTag() do
 		xml:skipAttr()
 		if name == "File" then
-			fa, fb, opening = xml:getInnerPos()
+			fa, fb, opening = xml:getContentPos()
 			assert(opening)
 		elseif name == "Index" then
-			ia, ib, opening = xml:getInnerPos()
+			ia, ib, opening = xml:getContentPos()
 			assert(opening)
 		else
 			error("Unexpected tag in a Texture")
