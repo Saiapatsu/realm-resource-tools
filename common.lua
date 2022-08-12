@@ -11,11 +11,20 @@ common.pathsep = pathsep
 function common.print(...)
 	local list = {...}
 	for k, v in ipairs(list) do list[k] = prettyPrint.dump(v) end
+	io.stdout:write(table.concat(list, "\t"))
+	return io.stdout:write("\n")
+end
+function common.printf(...)
+	io.stdout:write(string.format(...))
+	return io.stdout:write("\n")
+end
+function common.warn(...)
+	local list = {...}
+	for k, v in ipairs(list) do list[k] = prettyPrint.dump(v) end
 	io.stderr:write(table.concat(list, "\t"))
 	return io.stderr:write("\n")
 end
-
-function common.printf(...)
+function common.warnf(...)
 	io.stderr:write(string.format(...))
 	return io.stderr:write("\n")
 end

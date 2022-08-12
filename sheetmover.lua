@@ -64,12 +64,13 @@ local common = require "./common"
 local chunker = common.chunker
 local readSprites = common.readSprites
 local makePos = common.makePos
-local printf = common.printf
 local pathsep = common.pathsep
+local printf = common.printf
+local warnf = common.warnf
 
 local script, srcdir, dstdir = unpack(args)
-if srcdir == nil then print("No source directory specified") return end
-if dstdir == nil then print("No destination directory specified") return end
+if srcdir == nil then warnf("No source directory specified") return end
+if dstdir == nil then warnf("No destination directory specified") return end
 
 -----------------------------------
 
@@ -102,7 +103,7 @@ local dstremoved = stat "dstremoved" -- amount of tiles only present in src
 -- Outside of rotmg, source images might be images in a folder,
 -- here they're assetlibrary entries
 
-print("Reading source images")
+printf("Reading source images")
 local srcTileToPos = {}
 local srcPosToTile = {}
 local srcTileToDupGroup = {}
@@ -150,16 +151,16 @@ for id, asset in pairs(srcassets.animatedchars) do
 	doSrcAsset(id, asset)
 end
 
-print("Duplicates:")
-print("-----------------------")
+printf("Duplicates:")
+printf("-----------------------")
 for tile, group in pairs(srcTileToDupGroup) do
-	print(table.concat(group, "\n"))
-	print("-----------------------")
+	printf(table.concat(group, "\n"))
+	printf("-----------------------")
 end
 
 -----------------------------------
 
-print("Reading destination images")
+printf("Reading destination images")
 local srcPosToDstPos = {}
 local dstTileToPos = {}
 local dstTileToDupGroup = {}
@@ -202,7 +203,7 @@ local function doDstAsset(id, asset)
 				if atom ~= match and srcPosToTile[atom] ~= tile then
 					-- tile in common with src found at a different position
 					-- and the tile in the same spot in src as in dst aren't the same tile
-					-- print("Moved:" .. match .. " -> " .. atom)
+					-- printf("Moved:" .. match .. " -> " .. atom)
 					dstmoved()
 					srcPosToDstPos[match] = atom
 				end
@@ -210,7 +211,7 @@ local function doDstAsset(id, asset)
 			else
 				-- only in dst, not in src
 				dstadded()
-				print("New tile: " .. atom)
+				printf("New tile: " .. atom)
 			end
 		end
 	end)
@@ -224,31 +225,31 @@ for id, asset in pairs(dstassets.animatedchars) do
 	doDstAsset(id, asset)
 end
 
-print("Duplicates:")
-print("-----------------------")
+printf("Duplicates:")
+printf("-----------------------")
 for tile, group in pairs(dstTileToDupGroup) do
-	print(table.concat(group, "\n"))
-	print("-----------------------")
+	printf(table.concat(group, "\n"))
+	printf("-----------------------")
 end
 
 -- count tiles that are only in src, not in dst
 for k, v in pairs(srcTileToPos) do
 	if not dstTileToPos[k] then
 		dstremoved()
-		print("Missing tile: " .. v)
+		printf("Missing tile: " .. v)
 	end
 end
 
 -----------------------------------
 
-print("Stats")
+printf("Stats")
 
 -- print stats
-for _,v in ipairs(statlist) do print(v .. string.rep(" ", 11 - #v) .. stats[v]) end
+for _,v in ipairs(statlist) do printf(v .. string.rep(" ", 11 - #v) .. stats[v]) end
 
 -----------------------------------
 
-print("Updating data")
+printf("Updating data")
 
 local rope, cursor
 
@@ -356,7 +357,7 @@ end
 common.forEachXml(srcdir .. pathsep .. "xml", function(xml)
 	xml:doRoots(Root)
 	if #xml > 0 then
-		print("Writing " .. xml.name)
+		printf("Writing " .. xml.name)
 		replaceFinish(xml)
 		fs.writeFileSync(dstdir .. pathsep .. "xml" .. pathsep .. xml.name, table.concat(xml))
 	end
