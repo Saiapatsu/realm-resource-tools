@@ -138,26 +138,18 @@ table.insert(html, "<head>")
 
 table.insert(html, "<meta charset=UTF-8>")
 table.insert(html, "<title>RotMG spritesheet report</title>")
-table.insert(html, [[<style>
-img {
-	image-rendering: optimizeSpeed;
-	image-rendering: -moz-crisp-edges;
-	image-rendering: -o-crisp-edges;
-	image-rendering: -webkit-optimize-contrast;
-	image-rendering: crisp-edges;
-} div.sprite {
-	filter: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E %3Cfilter id='a' color-interpolation-filters='sRGB' x='0' y='0' width='1' height='1'%3E %3CfeMorphology operator='dilate' radius='1 1' in='SourceAlpha' result='morphology'/%3E %3CfeColorMatrix type='matrix0' in='morphology' result='colormatrix3' values=' 0 0 0 0 0.047 0 0 0 0 0.047 0 0 0 0 0.047 0 0 0 1 0 '/%3E %3CfeGaussianBlur stdDeviation='4 4' in='SourceAlpha' edgeMode='none' result='blur'/%3E %3CfeColorMatrix type='matrix' in='blur' result='colormatrix' values=' 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3.636 0 '/%3E %3CfeColorMatrix type='matrix' in='colormatrix' result='colormatrix2' values=' 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.275 0 '/%3E %3CfeMerge result='merge'%3E %3CfeMergeNode in='colormatrix2'/%3E %3CfeMergeNode in='colormatrix3'/%3E %3CfeMergeNode in='SourceGraphic'/%3E %3C/feMerge%3E %3C/filter%3E %3C/svg%3E#a");
-	padding: 8px;
-	display: block;
-}
-</style>]])
+table.insert(html, "<style>" .. fs.readFileSync(script:match(".*" .. pathsep) .. "sheetreport.css") .. "</style>")
 
 table.insert(html, "</head>")
 table.insert(html, "<body>")
 
-table.insert(html, "<div id=info style=position:fixed;right:0;bottom:0;></div>")
+table.insert(html, "<h1>RotMG spritesheet report</h1>")
 
 for _,file in ipairs(filelist) do
+	table.insert(html, "<h2>" .. file.file .. "</h2>")
+	for _,sheet in ipairs(fileToSheets[file.file]) do
+		table.insert(html, "<h3>" .. sheet .. "</h3>")
+	end
 	table.insert(html, string.format("<div class=sprite><img src=\"%s\" width=%d height=%d></div>"
 		, file.file
 		, file.w * scale
@@ -165,46 +157,13 @@ for _,file in ipairs(filelist) do
 	))
 end
 
+table.insert(html, "<div id=info style=position:fixed;right:0;bottom:0;></div>")
 table.insert(html, [[<script>
-const info = document.getElementById("info");
 const assets = ]] .. srcjsontext .. [[;
 const indexes = ]] .. json.stringify(indexes) .. [[;
 const fileToSheets = ]] .. json.stringify(fileToSheets) .. [[;
 const scale = ]] .. scale .. [[;
-
-document.body.onmousemove = e => onMouseMove(e);
-function onMouseMove(e) {
-	const target = e.target;
-	if (target.tagName !== "IMG") return;
-	const rect = target.getBoundingClientRect();
-	// mouse position on image
-	const mx = e.clientX - rect.x;
-	const my = e.clientY - rect.y;
-	// bounds check, just in case
-	if (mx < 0 || mx >= rect.width || my < 0 || my >= rect.height) return;
-	// pixel position
-	const x = Math.floor(mx / scale);
-	const y = Math.floor(my / scale);
-	// sheet size
-	const sw = Math.floor(rect.width / scale);
-	const sh = Math.floor(rect.height / scale);
-	
-	const file = target.attributes.src.value;
-	// fileToSheets[file].forEach(sheet => {
-	const sheet = fileToSheets[file][0];
-		const asset = assets.images[sheet] || assets.animatedchars[sheet];
-		const stride = sw / asset.w;
-		// tile position
-		const tx = Math.floor(x / asset.w);
-		const ty = Math.floor(y / asset.h);
-		const index = ty * stride + tx;
-		const usages = indexes[sheet][index];
-		if (usages)
-			info.innerText = usages.map(x => x.id).join(", ");
-		else
-			info.innerText = "-";
-	// });
-}
+]] .. fs.readFileSync(script:match(".*" .. pathsep) .. "sheetreport.js") .. [[
 </script>]])
 
 table.insert(html, "</body>")
