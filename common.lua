@@ -65,6 +65,7 @@ function common.makeTextureRoot(Texture, AnimatedTexture, RemoteTexture)
 		return function(xml)
 			xml.basePos = xml.pos
 			xml.type, xml.id = common.typeid(xml)
+			xml.typenum = tonumber(xml.typenum)
 			return xml:doTags(tags)
 		end
 	end
@@ -88,7 +89,7 @@ function common.fileindex(xml)
 			ia, ib, opening = xml:getContentPos()
 			assert(opening)
 		else
-			error("Unexpected tag in a Texture")
+			xml:skipContent()
 		end
 	end
 	return fa and xml:cut(fa, fb), ia and xml:cut(ia, ib), fa, fb, ia, ib
