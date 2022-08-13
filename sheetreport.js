@@ -35,11 +35,12 @@ function onMouseMove(e) {
 		const index = ty * stride + tx;
 		// the real stuff
 		const usages = indexes[sheet][index];
+		const sheetindex = `<h3>${sheet} ${animated ? index : "0x" + index.toString(16)}</h3>`;
 		if (!usages)
-			return;
-		return `<table>` + usages.map(x => `<tr><td>${x.id}<td>${x.xml}</tr>`).join("") + `</table><h3>${sheet} ${animated ? index : "0x" + index.toString(16)}</h3>`;
+			return sheetindex;
+		return `<table>` + usages.map(x => `<tr><td>${x.id}<td>${x.xml}</tr>`).join("") + `</table>${sheetindex}`;
 	}).filter(Boolean);
 	if (!info.length)
-		return show(`<h3>Unused</h3>`);
-	return show(info.join(""));
+		return ""; // no longer possible
+	return show(info.join("<hr>"));
 }

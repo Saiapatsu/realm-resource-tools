@@ -72,6 +72,8 @@ for name, _ in pairs(fileset) do
 		local fileobject = {file = name}
 		fileToObject[name] = fileobject
 		table.insert(filelist, fileobject)
+	else
+		print("Unable to find sheet " .. name)
 	end
 end
 
@@ -95,7 +97,7 @@ local function Texture(xml, animated)
 	index = tonumber(index)
 	-- for each file:index combination, save a backreference to where in the xmls it was seen
 	table.insert(getIndex(file, index), {
-		type = xml.type,
+		type = xml.typenum,
 		id = xml.id,
 		xml = xml.name,
 		pos = xml.pos,
@@ -143,7 +145,7 @@ function stringifyIndexes()
 		p"},"
 	end
 	p"}"
-	return table.concat(rope)
+	return table.concat(rope):gsub(",}", "}")
 end
 
 --------------------------------------------------------------------------------
