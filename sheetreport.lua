@@ -3,8 +3,6 @@ sheetreport <srcdir> <outdir>
 
 srcdir: a directory shaped like what sheetmover expects
 dstdir: write the output HTML in this directory. The intent was to also copy all images there for self-contained output.
-
--- BUG: json.stringify, being an unwieldy library, likes to turn indexes.mountainTempleObjects8x8 into an array with some null holes in it, thereby introducing an off-by-one error.
 ]]
 
 local fs = require "fs"
@@ -128,6 +126,28 @@ end
 
 --------------------------------------------------------------------------------
 
+function stringifyIndexes()
+	local rope = {}
+	local function p(x) table.insert(rope, x) end
+	local function q(x) return p('"' .. x .. '"') end
+	p"{"
+	for sheet, indexes in pairs(indexes) do
+		q(sheet)
+		p":{"
+		for index, reflist in pairs(indexes) do
+			q(index)
+			p":"
+			p(json.stringify(reflist))
+			p","
+		end
+		p"},"
+	end
+	p"}"
+	return table.concat(rope)
+end
+
+--------------------------------------------------------------------------------
+
 -- create html report
 local html = {}
 local scale = 4
@@ -160,7 +180,7 @@ end
 table.insert(html, "<div id=info style=position:fixed;right:0;bottom:0;></div>")
 table.insert(html, [[<script>
 const assets = ]] .. srcjsontext .. [[;
-const indexes = ]] .. json.stringify(indexes) .. [[;
+const indexes = ]] .. stringifyIndexes() .. [[;
 const fileToSheets = ]] .. json.stringify(fileToSheets) .. [[;
 const scale = ]] .. scale .. [[;
 ]] .. fs.readFileSync(script:match(".*" .. pathsep) .. "sheetreport.js") .. [[
