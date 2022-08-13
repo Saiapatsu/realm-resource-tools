@@ -180,7 +180,6 @@ function common.getSizes(files, dir)
 	}, " "), "rb")
 	local str = file:read("*a")
 	file:close()
-	print(str)
 	local i = 1
 	for w, h in str:gmatch("(%d+) (%d+) ") do
 		files[i].w = tonumber(w)
