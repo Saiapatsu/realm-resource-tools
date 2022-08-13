@@ -4,10 +4,13 @@ img {
 	image-rendering: -o-crisp-edges;
 	image-rendering: -webkit-optimize-contrast;
 	image-rendering: crisp-edges;
-} div.sprite {
+} span.sprite {
 	filter: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E %3Cfilter id='a' color-interpolation-filters='sRGB' x='0' y='0' width='1' height='1'%3E %3CfeMorphology operator='dilate' radius='1 1' in='SourceAlpha' result='morphology'/%3E %3CfeColorMatrix type='matrix0' in='morphology' result='colormatrix3' values=' 0 0 0 0 0.047 0 0 0 0 0.047 0 0 0 0 0.047 0 0 0 1 0 '/%3E %3CfeGaussianBlur stdDeviation='4 4' in='SourceAlpha' edgeMode='none' result='blur'/%3E %3CfeColorMatrix type='matrix' in='blur' result='colormatrix' values=' 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 3.636 0 '/%3E %3CfeColorMatrix type='matrix' in='colormatrix' result='colormatrix2' values=' 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.275 0 '/%3E %3CfeMerge result='merge'%3E %3CfeMergeNode in='colormatrix2'/%3E %3CfeMergeNode in='colormatrix3'/%3E %3CfeMergeNode in='SourceGraphic'/%3E %3C/feMerge%3E %3C/filter%3E %3C/svg%3E#a");
 	padding: 8px;
-	display: block;
+	display: inline-block;
+} span.mask {
+	padding: 8px;
+	display: inline-block;
 } #info h3 {
 	text-align: right;
 } #info table {

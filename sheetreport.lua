@@ -60,6 +60,9 @@ local function xSheet(list)
 		sheetToFile[name] = sheet.file
 		indexes[name] = {}
 		fileset[sheet.file] = true
+		if sheet.mask and not fs.existsSync(srcsheets .. pathsep .. sheet.mask) then
+			print("Unable to find mask " .. sheet.mask)
+		end
 		table.insert(get(fileToSheets, sheet.file), name)
 	end
 end
@@ -172,11 +175,21 @@ for _,file in ipairs(filelist) do
 	for _,sheet in ipairs(fileToSheets[file.file]) do
 		table.insert(html, "<h3>" .. sheet .. "</h3>")
 	end
-	table.insert(html, string.format("<div class=sprite><img src=\"%s\" width=%d height=%d></div>"
+	table.insert(html, string.format("<span class=sprite><img src=\"%s\" width=%d height=%d></span>"
 		, file.file
 		, file.w * scale
 		, file.h * scale
 	))
+	for _,sheet in ipairs(fileToSheets[file.file]) do
+		sheet = srcjson.animatedchars[sheet]
+		if sheet and sheet.mask then
+			table.insert(html, string.format("<span class=mask><img src=\"%s\" width=%d height=%d></span>"
+				, sheet.mask
+				, file.w * scale
+				, file.h * scale
+			))
+		end
+	end
 end
 
 table.insert(html, "<div id=info style=position:fixed;right:0;bottom:0;></div>")
