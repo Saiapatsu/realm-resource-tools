@@ -55,6 +55,25 @@ A lot of them will come from sheets with white backgrounds, such as textiles and
 This script does not account for animated textures' masks yet.
 You're responsible for keeping the masks in sync.
 In the future, the script could attempt move the masks around when the sheet is modified.
+
+Regex replacements that will get you most of the way from that big ol' block in AssetLoader to a proper assets.json:
+
+new EmbeddedAssets\.([^,\n]*)\(\)\.bitmapData
+$1
+new BitmapDataSpy\(8,8,true,0\)
+invisible
+AssetLibrary.addImageSet\("(.*)",(.*),(.*),(.*)\);
+"$1":{"file":"$2.png","w":$3,"h":$4},
+AnimatedChars.add\("(.*)",(.*),(.*),(.*),(.*),(.*),(.*),(.*)\);
+"$1":{"file":"$2.png","mask":"$3.png","sw":$4,"sh":$5,"w":$6,"h":$7,"facing":$8},
+"null\.png"
+null
+
+[Manual cleanup]
+[Add json brackets, images:, animatedchars:]
+
+,}
+}
 ]]
 
 local fs = require "fs"
