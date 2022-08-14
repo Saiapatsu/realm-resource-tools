@@ -80,16 +80,13 @@ end
 -- Transition to Text
 function common.fileindex(xml)
 	local fa, fb, ia, ib
-	for name in xml:forTag() do
-		xml:skipAttr()
+	for name, a, b, opening in xml:forSimplePos() do
 		if name == "File" then
-			fa, fb, opening = xml:getContentPos()
+			fa, fb = a, b
 			assert(opening)
 		elseif name == "Index" then
-			ia, ib, opening = xml:getContentPos()
+			ia, ib = a, b
 			assert(opening)
-		else
-			xml:skipContent()
 		end
 	end
 	return fa and xml:cut(fa, fb), ia and xml:cut(ia, ib), fa, fb, ia, ib
