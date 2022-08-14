@@ -8,71 +8,23 @@ local common = {}
 common.pathsep = pathsep
 
 function common.makeTextureRoot(Texture, AnimatedTexture, RemoteTexture)
-	-- todo: make these follow the actual logic used in the client
-	-- (i.e. TextureDataConcrete)
-	
-	local TextureOrAnimatedTexture = {
+	local descendants = {
 		Texture = Texture,
-		RemoteTexture = RemoteTexture,
 		AnimatedTexture = AnimatedTexture,
-	}
-	
-	local RandomTexture = {
-		Texture = Texture,
 		RemoteTexture = RemoteTexture,
 	}
 	
-	local TextureOrRandomTexture = {
-		Texture = Texture,
-		RemoteTexture = RemoteTexture,
-		RandomTexture = RandomTexture,
-	}
-	
-	local Object = {
-		Texture = Texture,
-		RemoteTexture = RemoteTexture,
-		AnimatedTexture = AnimatedTexture,
-		RandomTexture = TextureOrAnimatedTexture,
-		AltTexture = TextureOrAnimatedTexture,
-		Portrait = TextureOrAnimatedTexture,
-		Animation = {
-			Frame = TextureOrRandomTexture,
-		},
-		Mask = Texture, -- dyes and textiles are masked; Tex1, Tex2 set the dye or cloth
-		-- wall textures
-		Top = TextureOrRandomTexture,
-		TTexture = Texture,
-		LineTexture = Texture,
-		CrossTexture = Texture,
-		LTexture = Texture,
-		DotTexture = Texture,
-		ShortLineTexture = Texture,
-	}
-	
-	local Ground = {
-		Texture = Texture,
-		RandomTexture = RandomTexture,
-		RemoteTexture = RemoteTexture,
-		-- top of the tile as seen on OT tiles or onsen steam
-		Top = TextureOrRandomTexture,
-		-- carpet edges
-		Edge = TextureOrRandomTexture,
-		InnerCorner = TextureOrRandomTexture,
-		Corner = TextureOrRandomTexture,
-	}
-	
-	local function infoInjector(tags)
-		return function(xml)
-			xml.basePos = xml.pos
-			xml.type, xml.id = common.typeid(xml)
-			xml.typenum = tonumber(xml.typenum)
-			return xml:doTags(tags)
-		end
+	local function ObjectOrGround(xml, name, pos)
+		xml.basePos = pos
+		xml.type, xml.id = common.typeid(xml)
+		xml.typenum = tonumber(xml.typenum)
+		xml.tagName = name
+		return xml:doDescendants(descendants)
 	end
 	
 	return {
-		Objects = {Object = infoInjector(Object)},
-		GroundTypes = {Ground = infoInjector(Ground)},
+		Objects = {Object = ObjectOrGround},
+		GroundTypes = {Ground = ObjectOrGround},
 	}
 end
 
