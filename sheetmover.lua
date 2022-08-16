@@ -321,7 +321,7 @@ if not fs.existsSync(dstxml) then
 end
 
 common.forEachXml(srcxml, function(xml)
-	xml:doRoots(Root)
+	xml:doTagsRoot(Root)
 	if #xml > 0 then
 		printf("Writing " .. xml.name)
 		replaceFinish(xml)

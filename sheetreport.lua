@@ -111,7 +111,7 @@ local root = common.makeTextureRoot(
 	function(xml) return Texture(xml, true) end
 )
 common.forEachXml(srcxml, function(xml)
-	xml:doRoots(root)
+	xml:doTagsRoot(root)
 end)
 
 --------------------------------------------------------------------------------

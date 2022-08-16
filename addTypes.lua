@@ -78,7 +78,7 @@ local tree = {
 -- find all xmls with missing types
 local files = {}
 forEachXml(indir, function(xml)
-	xml:doRoots(tree)
+	xml:doTagsRoot(tree)
 	-- if the file needs to be modified, store it for the next phase
 	if #xml > 0 then
 		table.insert(files, xml)

@@ -66,7 +66,7 @@ local tree = {
 }
 
 -- process all xmls
-common.forEachXml(xmldir, function(xml) return xml:doRoots(tree) end)
+common.forEachXml(xmldir, function(xml) return xml:doTagsRoot(tree) end)
 
 function visualize(types, pathImage)
 	local file = io.popen(table.concat({
