@@ -38,7 +38,7 @@ common.forEachXml(dir, function(xml)
 	while true do --> text
 		local state = xml() --> ?
 		
-		if state == xmls.stag then
+		if state == xml.STAG then
 			local name = xml:cut(xml.pos, select(2, xml())) --> attr
 			local tbl = get(stack[#stack], name)
 			counts[tbl] = counts[tbl] + 1
@@ -50,11 +50,11 @@ common.forEachXml(dir, function(xml)
 				table.insert(stack, tbl)
 			end
 			
-		elseif state == xmls.etag then
+		elseif state == xml.ETAG then
 			table.remove(stack)
 			xml() --> text
 			
-		elseif state == xmls.eof then
+		elseif state == xml.EOF then
 			break
 			
 		else
