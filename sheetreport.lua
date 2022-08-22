@@ -1,5 +1,5 @@
 --[[
-sheetreport <srcdir> <outdir>
+sheetreport <srcdir> [<outdir>]
 
 srcdir: a directory shaped like what sheetmover expects
 dstdir: write the output HTML in this directory. The intent was to also copy all images there for self-contained output.
@@ -14,7 +14,7 @@ local warnf = common.warnf
 
 local script, srcdir, outdir = unpack(args)
 if srcdir == nil then warnf("No input directory specified") return end
-if outdir == nil then warnf("No output specified") return end
+-- if outdir == nil then warnf("No output specified") return end
 
 local srcxml = srcdir .. pathsep .. "xml"
 local srcsheets = srcdir .. pathsep .. "sheets"
@@ -116,21 +116,6 @@ end)
 
 --------------------------------------------------------------------------------
 
--- ensure xml output directory exists
-if not fs.existsSync(outdir) then
-	fs.mkdirSync(outdir)
-end
-
--- copy sheets
--- for _,v in ipairs(filelist) do
-	-- local src = srcdir .. pathsep .. v.file
-	-- local dst = outdir .. pathsep .. v.file
-	-- fs.unlinkSync(dst)
-	-- fs.writeFileSync(dst, fs.readFileSync(src))
--- end
-
---------------------------------------------------------------------------------
-
 function stringifyIndexes()
 	local rope = {}
 	local function p(x) table.insert(rope, x) end
@@ -204,4 +189,26 @@ const scale = ]] .. scale .. [[;
 table.insert(html, "</body>")
 table.insert(html, "</html>")
 
-fs.writeFileSync(outdir .. pathsep .. "index.html", table.concat(html, "\n"))
+local index
+if outdir then
+	-- ensure xml output directory exists
+	if not fs.existsSync(outdir) then
+		fs.mkdirSync(outdir)
+	end
+	
+	-- copy sheets
+	print("Copying sheets")
+	for _,v in ipairs(filelist) do
+		local src = srcsheets .. pathsep .. v.file
+		local dst = outdir .. pathsep .. v.file
+		fs.writeFileSync(dst, fs.readFileSync(src))
+	end
+	
+	index = outdir .. pathsep .. "index.html"
+	
+else
+	index = srcsheets .. pathsep .. "index.html"
+end
+
+print("Writing " .. index)
+fs.writeFileSync(index, table.concat(html, "\n"))
