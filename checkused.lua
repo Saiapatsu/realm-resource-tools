@@ -73,7 +73,10 @@ local function split(used, sheet, file, w, h, stride)
 	
 	common.readSprites(pathFile, w, h, function(index, tile)
 		local atom = common.makePos(sheet, index)
-		if used[atom] then
+		if tile == empty then
+			table.insert(ropeUsed  , empty)
+			table.insert(ropeUnused, empty)
+		elseif used[atom] then
 			countUsed = countUsed + 1
 			table.insert(ropeUsed  , tile)
 			table.insert(ropeUnused, empty)
