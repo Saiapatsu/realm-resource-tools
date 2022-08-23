@@ -88,7 +88,7 @@ function describe(px, py, sw, sh, file) {
 		const usages = indexes[sheet][index];
 		const usagesTable = usages ? `<table>` + usages.map(x => `<tr><td>${x.id}<td>${x.xml}</tr>`).join("") + `</table>` : "";
 		const atom = `${sheet}:${animated ? index : "0x" + index.toString(16)}`;
-		const duplicates = mapAtomToDupGroup.has(atom) ? "Duplicates: " + mapAtomToDupGroup.get(atom).map(x => `<a href="#${x}">${x}</a>`).join(", ") : "";
+		const duplicates = mapAtomToDupGroup.has(atom) ? "Duplicates: " + mapAtomToDupGroup.get(atom).filter(x => x !== atom).map(x => `<a href="#${x}">${x}</a>`).join(", ") : "";
 		return `${usagesTable}${duplicates}<h3>${atom}</h3>`;
 	}).filter(Boolean);
 	return show(info.join("<hr>"));
