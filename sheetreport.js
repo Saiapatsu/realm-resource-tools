@@ -1,6 +1,8 @@
 const info = document.getElementById("info");
 document.onmousemove = e => onMouseMove(e);
 document.onmousedown = e => onMouseDown(e);
+window.onhashchange = e => onHashChange(e);
+goToURL(location);
 
 // set up duplicate detection
 const mapAtomToDupGroup = new Map();
@@ -8,6 +10,8 @@ dupGroups.forEach(group => group.forEach(atom => mapAtomToDupGroup.set(atom, gro
 
 // whether to pause onMouseMove
 var focused = false;
+// what the location's hash was just set to
+var newHash;
 
 // print html in the bottom right corner
 function show(str) {
@@ -33,6 +37,21 @@ function onMouseDown(e) {
 		focused = false;
 		return show("");
 	}
+}
+
+function onHashChange(e) {
+	return goToURL(new URL(e.newURL));
+}
+
+function goToURL(url) {
+	if (newHash === url.hash) return;
+	newHash = url.hash;
+	const match = newHash.match(/#([^:]+):(.+)/);
+	if (!match) return;
+	const index = Number(match[2]);
+	if (!index) return;
+	const sheet = match[1];
+	return goToSprite(sheet, index);
 }
 
 // figure out the position on sheet, sheet size and filename of a mouse event
@@ -69,7 +88,7 @@ function describe(px, py, sw, sh, file) {
 		const usages = indexes[sheet][index];
 		const usagesTable = usages ? `<table>` + usages.map(x => `<tr><td>${x.id}<td>${x.xml}</tr>`).join("") + `</table>` : "";
 		const atom = `${sheet}:${animated ? index : "0x" + index.toString(16)}`;
-		const duplicates = mapAtomToDupGroup.has(atom) ? "Duplicates: " + mapAtomToDupGroup.get(atom).join(", ") : "";
+		const duplicates = mapAtomToDupGroup.has(atom) ? "Duplicates: " + mapAtomToDupGroup.get(atom).map(x => `<a href="#${x}">${x}</a>`).join(", ") : "";
 		return `${usagesTable}${duplicates}<h3>${atom}</h3>`;
 	}).filter(Boolean);
 	if (!info.length)
@@ -78,12 +97,24 @@ function describe(px, py, sw, sh, file) {
 }
 
 function clickImage(px, py, sw, sh, file) {
-	// todo: highlight sprite
+	const sheet = fileToSheets[file][0];
+	var animated = false;
+	const asset = assets.images[sheet] || (animated = true) && assets.animatedchars[sheet];
+	const element = document.getElementById(file);
+	const rect = element.getBoundingClientRect();
+	const stride = sw / asset.w;
+	// tile position
+	const tx = Math.floor(px / asset.w);
+	const ty = Math.floor(py / asset.h);
+	const index = ty * stride + tx;
+	// set location's hash
+	newHash = `#${sheet}:${animated ? index : "0x" + index.toString(16)}`;
+	document.location.hash = newHash;
 	return describe(px, py, sw, sh, file);
 }
 
 function goToSprite(sheet, index) {
-	const asset = assets.images[sheet] || (animated = true) && assets.animatedchars[sheet];
+	const asset = assets.images[sheet] || assets.animatedchars[sheet];
 	const file = asset.file;
 	const element = document.getElementById(file);
 	const rect = element.getBoundingClientRect();
@@ -95,4 +126,5 @@ function goToSprite(sheet, index) {
 	const my = ty * asset.h * scale;
 	// scroll to sprite
 	window.scrollTo(0, window.scrollY + rect.top + my);
+	// todo: highlight sprite
 }
