@@ -14,7 +14,7 @@ window.onhashchange = e => onHashChange(e);
 
 // set up duplicate detection
 const mapAtomToDupGroup = new Map();
-dupGroups.forEach(group => group.forEach(atom => mapAtomToDupGroup.set(atom, group)));
+dupGroups.forEach(group => group.forEach(atom => mapAtomToDupGroup.set(atomize(...atom), group)));
 
 // set up highlight square
 const highlightElem = document.createElement("div");
@@ -135,6 +135,10 @@ function withPosition(element, cx, cy, callback) {
 	return callback(px, py, sw, sh, file, element);
 }
 
+function atomize(sheet, index, animated) {
+	return `${sheet}:${animated ? index : "0x" + index.toString(16)}`;
+}
+
 // p: pixel position on sheet
 // s: sheet size
 // file: image filename
@@ -155,8 +159,17 @@ function describe(px, py, sw, sh, file, element) {
 		const usages = indexes[sheet][index];
 		const usagesTable = usages ? `<table>` + usages.map(x => `<tr><td>${x.id}<td>${x.xml}</tr>`).join("") + `</table>` : "";
 		// list duplicates of this sprite and link to them
-		const atom = `${sheet}:${animated ? index : "0x" + index.toString(16)}`;
-		const duplicates = mapAtomToDupGroup.has(atom) ? "Duplicates: " + mapAtomToDupGroup.get(atom).filter(x => x !== atom).map(x => `<a href="#${x}">${x}</a>`).join(", ") : "";
+		const atom = atomize(sheet, index, animated);
+		const duplicates = mapAtomToDupGroup.has(atom)
+			? "Duplicates: " + mapAtomToDupGroup
+				// get this sprite's list of duplicates
+				.get(atom)
+				// remove the sprite itself
+				.filter(x => !(x[0] === sheet && x[1] === index))
+				// convert to links
+				.map(x => {x = atomize(...x); return `<a href="#${x}">${x}</a>`})
+				.join(", ")
+			: "";
 		// the above two things + position of sprite
 		return `${usagesTable}${duplicates}<h3>${atom}</h3>`;
 	}).filter(Boolean).join("<hr>"));

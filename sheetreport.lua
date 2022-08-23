@@ -44,9 +44,9 @@ local fileToSheets = {}
 -- sheet -> index -> [backreference]
 local indexes = {}
 
--- tile -> [atom]
+-- tile -> [[sheet, index, animated]]
 local tileToDupGroup = {}
--- [[atom]]
+-- [[[sheet, index, animated]]]
 local dupGroups = {}
 
 local srcjsontext = fs.readFileSync(srcassets)
@@ -118,7 +118,7 @@ local function xSheet(list, animated)
 				-- sheet = name,
 				-- index = index,
 			-- })
-			table.insert(get(tileToDupGroup, tile), atomize(name, index, animated))
+			table.insert(get(tileToDupGroup, tile), {name, index, animated})
 		end)
 	end
 end
