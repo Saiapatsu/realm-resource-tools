@@ -26,6 +26,10 @@ var focused = false;
 var newHash;
 // last mouse movement event, used for replaying mouse move events
 var lastMouseEvent;
+// lt: last highlighted tile position on sheet
+// la: last highlighted tile size on sheet
+// lsheet: last highlighted sheet name
+var lelement, ltx, lty, law, lah, lsheet, lstride;
 
 // use location hash
 goToURL(location);
@@ -56,9 +60,28 @@ function onScroll(e) {
 }
 
 function onKeyDown(e) {
-	// 27: Escape
-	if (e.keyCode == 27 && !e.ctrlKey && !e.shiftKey && !e.altKey) {
+	if (e.ctrlKey || e.altKey) return;
+	
+	if (e.keyCode == 9) { // 9: Tab
+		if (e.shiftKey) {
+			return moveTab(e, -1);
+		} else {
+			return moveTab(e, 1);
+		}
+	}
+	
+	if (e.shiftKey) return;
+	
+	if (e.keyCode == 27) { // 27: Escape
 		return unfocus();
+	} else if (e.keyCode == 37) { // 37: ArrowLeft
+		return moveFocus(e, -1, 0);
+	} else if (e.keyCode == 38) { // 38: ArrowUp
+		return moveFocus(e, 0, -1);
+	} else if (e.keyCode == 39) { // 39: ArrowRight
+		return moveFocus(e, 1, 0);
+	} else if (e.keyCode == 40) { // 40: ArrowDown
+		return moveFocus(e, 0, 1);
 	}
 }
 
@@ -160,9 +183,8 @@ function clickImage(px, py, sw, sh, file, element) {
 	const index = ty * stride + tx;
 	// set location's hash
 	// does not call goToSprite()
-	newHash = `#${sheet}:${animated ? index : "0x" + index.toString(16)}`;
-	document.location.hash = newHash;
-	highlight(element, tx, ty, asset.w, asset.h);
+	setHash(`#${sheet}:${animated ? index : "0x" + index.toString(16)}`);
+	highlight(element, tx, ty, asset.w, asset.h, sheet, stride);
 	return describe(px, py, sw, sh, file, element);
 }
 
@@ -189,7 +211,7 @@ function goToSprite(sheet, index) {
 	const iy = py * scale;
 	// scroll to sprite
 	window.scrollTo(0, window.scrollY + rect.top + iy - (window.innerHeight - asset.h * scale) / 2);
-	highlight(element, tx, ty, asset.w, asset.h);
+	highlight(element, tx, ty, asset.w, asset.h, sheet, stride);
 	return describe(px, py, sw, sh, file, element);
 }
 
@@ -197,7 +219,78 @@ function goToSprite(sheet, index) {
 // element: img element in the DOM
 // t: tile position on sheet
 // a: tile size on sheet
-function highlight(element, tx, ty, aw, ah) {
+// sheet: sheet name
+function highlight(element, tx, ty, aw, ah, sheet, stride) {
+	[lelement, ltx, lty, law, lah, lsheet, lstride] = [element, tx, ty, aw, ah, sheet, stride];
 	element.parentNode.appendChild(highlightElem);
 	highlightElem.setAttribute("style", `width:${aw * scale}px;height:${ah * scale}px;left:${tx * aw * scale}px;top:${ty * ah * scale}px`)
+}
+
+// dt: delta tile position on sheet
+function moveFocus(e, dtx, dty) {
+	if (!focused) return;
+	e.preventDefault();
+	
+	var animated = false;
+	const asset = assets.images[lsheet] || (animated = true) && assets.animatedchars[lsheet];
+	const rect = lelement.getBoundingClientRect();
+	// s: sheet size in pixels
+	const sw = Math.floor(rect.width / scale);
+	const sh = Math.floor(rect.height / scale);
+	// t: tile position on sheet
+	const tx = ltx + dtx;
+	const ty = lty + dty;
+	const index = ty * lstride + tx;
+	// bounds check
+	if (tx < 0 || tx * asset.w >= sw || ty < 0 || ty * asset.h >= sh) return;
+	setHash(`#${lsheet}:${animated ? index : "0x" + index.toString(16)}`);
+	goToSprite(lsheet, index);
+	return highlight(lelement, tx, ty, law, lah, lsheet, lstride);
+}
+
+function moveTab(e, d) {
+	if (!focused) return;
+	e.preventDefault();
+	
+	// get previous/next sheet
+	const lfile = lelement.attributes.id.value;
+	const lsheets = fileToSheets[lfile];
+	const sheetindex = lsheets.indexOf(lsheet) + d;
+	if (sheetindex >= 0 && sheetindex < lsheets.length) {
+		const sheet = lsheets[sheetindex];
+		// remap index onto other sheet
+		const lasset = assets.images[lsheet] || assets.animatedchars[lsheet];
+		var animated = false;
+		const asset = assets.images[sheet] || (animated = true) && assets.animatedchars[sheet];
+		const rect = lelement.getBoundingClientRect();
+		// s: sheet size in pixels
+		const sw = Math.floor(rect.width / scale);
+		const stride = sw / asset.w;
+		// t: tile position on sheet
+		const tx = Math.floor(ltx * lasset.w / asset.w);
+		const ty = Math.floor(lty * lasset.h / asset.h);
+		const index = ty * stride + tx;
+		goToSprite(lsheets[sheetindex], index)
+		
+	} else {
+		// get previous/next file
+		const next = d > 0 ? "nextElementSibling" : "previousElementSibling";
+		var span = lelement.parentNode;
+		while (1) {
+			span = span[next];
+			if (!span) return;
+			if (span.tagName === "SPAN" && span.className === "sprite") break;
+		}
+		const element = span.firstElementChild;
+		const file = element.attributes.id.value;
+		const sheets = fileToSheets[file];
+		const sheet = sheets[d > 0 ? 0 : sheets.length - 1];
+		goToSprite(sheet, 0)
+	}
+}
+
+function setHash(hash) {
+	const newURL = new URL(document.location);
+	newURL.hash = hash;
+	history.replaceState(null, "", newURL);
 }
