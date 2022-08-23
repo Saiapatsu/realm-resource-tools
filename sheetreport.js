@@ -1,6 +1,8 @@
 const info = document.getElementById("info");
 document.onmousemove = e => onMouseMove(e);
 document.onmousedown = e => onMouseDown(e);
+document.onscroll = e => onScroll(e);
+document.onkeydown = e => onKeyDown(e);
 window.onhashchange = e => onHashChange(e);
 
 // set up duplicate detection
@@ -12,6 +14,8 @@ var focused = false;
 // what the location's hash was just set to
 var newHash;
 
+var lastMouseEvent;
+
 // use location hash
 goToURL(location);
 
@@ -21,6 +25,7 @@ function show(str) {
 }
 
 function onMouseMove(e) {
+	lastMouseEvent = e;
 	if (focused)
 		return;
 	
@@ -35,9 +40,23 @@ function onMouseDown(e) {
 		focused = true;
 		return withPosition(e, clickImage);
 	} else if (!info.contains(e.target)) {
-		focused = false;
-		return show("");
+		return unfocus();
 	}
+}
+
+function onScroll(e) {
+	return onMouseMove(lastMouseEvent);
+}
+
+function onKeyDown(e) {
+	if (e.keyCode == 27 && !e.ctrlKey && !e.shiftKey && !e.altKey) { // escape
+		return unfocus();
+	}
+}
+
+function unfocus() {
+	focused = false;
+	return onMouseMove(lastMouseEvent);
 }
 
 function onHashChange(e) {
