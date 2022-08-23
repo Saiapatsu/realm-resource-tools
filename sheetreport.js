@@ -22,8 +22,6 @@ highlightElem.className = "highlight";
 
 // whether to pause onMouseMove
 var focused = false;
-// what the location's hash was just set to
-var newHash;
 // last mouse movement event, used for replaying mouse move events
 var lastMouseEvent;
 // lt: last highlighted tile position on sheet
@@ -37,9 +35,9 @@ goToURL(location);
 // ---------------------------------------------------------
 
 function onMouseMove(e) {
+	if (!e) return; // happens on page load
 	lastMouseEvent = e;
-	if (focused)
-		return;
+	if (focused) return;
 	
 	if (e.target.tagName === "IMG")
 		return withPosition(e.target, e.clientX, e.clientY, describe);
@@ -103,10 +101,7 @@ function onHashChange(e) {
 }
 
 function goToURL(url) {
-	// if the hash was set by a script, do nothing more
-	if (newHash === url.hash) return;
-	newHash = url.hash;
-	const match = newHash.match(/#([^:]+):(.+)/);
+	const match = url.hash.match(/#([^:]+):(.+)/);
 	if (!match) return;
 	// index: index of sprite on sheet
 	const index = Number(match[2]);
