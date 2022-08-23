@@ -139,18 +139,25 @@ function common.getSizes(files, dir)
 end
 
 -- return a file handle to write to
-function common.writeSprites(filepath, w, h, ww)
+function common.writeSprites(filepath, w, h, stride)
 	return io.popen(table.concat({
 		"magick montage",
 		"-depth 8",
 		"-size", w .. "x" .. h,
-		"-tile", ww .. "x",
+		"-tile", stride .. "x",
 		"-geometry +0+0",
 		"-border 0x0",
 		"-background #00000000",
 		"RGBA:-",
 		unparse(filepath),
 	}, " "), "wb")
+end
+
+-- write a blob to file directly
+function common.writeSpritesSync(filepath, w, h, stride, data)
+	local file = common.writeSprites(filepath, w, h, stride)
+	file:write(data)
+	file:close()
 end
 
 -- Attempt to operate on each XML file in a directory

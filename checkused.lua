@@ -58,75 +58,47 @@ print("Processing images")
 
 local assets = json.parse(fs.readFileSync(pathJson))
 
-for id, asset in pairs(assets.images) do
-	if not usedSheets[id] then goto continue end
-	
-	local pathFile = dirSheets .. pathsep .. asset.file
-	if not fs.existsSync(pathFile) then goto continue end
-	
-	local empty = string.rep("\0", asset.w * asset.h * 4)
-	local fileUsed = writeSprites(dirUsed .. pathsep .. id .. ".png", asset.w, asset.h, 16)
-	local fileUnused = writeSprites(dirUnused .. pathsep .. id .. ".png", asset.w, asset.h, 16)
-	
-	readSprites(pathFile, asset.w, asset.h, function(i, tile)
-		local atom = makePos(id, i)
-		if usedTextures[atom] then
-			fileUsed:write(tile)
-			fileUnused:write(empty)
-		else
-			fileUsed:write(empty)
-			fileUnused:write(tile)
-		end
-	end)
-	
-	fileUsed:close()
-	fileUnused:close()
-	
-	::continue::
-end
-
-for id, asset in pairs(assets.animatedchars) do
-	if not usedSheets[id] then goto continue end
-	
-	local pathFile = dirSheets .. pathsep .. asset.file
-	if not fs.existsSync(pathFile) then goto continue end
-	
-	local empty = string.rep("\0", asset.w * asset.h * 4)
-	local fileUsed = writeSprites(dirUsed .. pathsep .. id .. ".png", asset.w, asset.h, 1)
-	local fileUnused = writeSprites(dirUnused .. pathsep .. id .. ".png", asset.w, asset.h, 1)
-	
-	readSprites(dirSheets .. pathsep .. asset.file, asset.w, asset.h, function(i, tile)
-		local atom = makePos(id, i)
-		if usedAnimatedTextures[atom] then
-			fileUsed:write(tile)
-			fileUnused:write(empty)
-		else
-			fileUsed:write(empty)
-			fileUnused:write(tile)
-		end
-	end)
-	
-	fileUsed:close()
-	fileUnused:close()
-	
-	if asset.mask then
-		local fileUsed = writeSprites(dirUsed .. pathsep .. id .. "Mask.png", asset.w, asset.h, 1)
-		local fileUnused = writeSprites(dirUnused .. pathsep .. id .. "Mask.png", asset.w, asset.h, 1)
+local function split(used, sheet, file, w, h, stride)
+	local pathFile = dirSheets .. pathsep .. file
+	if not fs.existsSync(pathFile) then
+		print("Missing " .. pathFile)
+		return
 		
-		readSprites(dirSheets .. pathsep .. asset.mask, asset.w, asset.h, function(i, tile)
-			local atom = makePos(id, i)
-			if usedAnimatedTextures[atom] then
-				fileUsed:write(tile)
-				fileUnused:write(empty)
-			else
-				fileUsed:write(empty)
-				fileUnused:write(tile)
-			end
-		end)
-		
-		fileUsed:close()
-		fileUnused:close()
+	else
+		print(pathFile)
 	end
 	
-	::continue::
+	local fileUsed = writeSprites(dirUsed .. pathsep .. sheet .. ".png", w, h, stride)
+	local fileUnused = writeSprites(dirUnused .. pathsep .. sheet .. ".png", w, h, stride)
+	
+	local empty = string.rep("\0", w * h * 4)
+	
+	readSprites(pathFile, w, h, function(index, tile)
+		local atom = makePos(sheet, index)
+		if used[atom] then
+			fileUsed:write(tile)
+			fileUnused:write(empty)
+		else
+			fileUsed:write(empty)
+			fileUnused:write(tile)
+		end
+	end)
+	
+	fileUsed:close()
+	fileUnused:close()
+end
+
+for sheet, asset in pairs(assets.images) do
+	if usedSheets[sheet] then
+		split(usedTextures, sheet, asset.file, asset.w, asset.h, 16)
+	end
+end
+
+for sheet, asset in pairs(assets.animatedchars) do
+	if usedSheets[sheet] then
+		split(usedAnimatedTextures, sheet, asset.file, asset.w, asset.h, 1)
+		if asset.mask then
+			split(usedAnimatedTextures, sheet .. "Mask", asset.file, asset.w, asset.h, 1)
+		end
+	end
 end
