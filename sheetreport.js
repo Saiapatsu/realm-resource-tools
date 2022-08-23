@@ -74,13 +74,13 @@ function onKeyDown(e) {
 	
 	if (e.keyCode == 27) { // 27: Escape
 		return unfocus();
-	} else if (e.keyCode == 37) { // 37: ArrowLeft
+	} else if (e.keyCode == 37 || e.keyCode == 65) { // 37: ArrowLeft, 65: a
 		return moveFocus(e, -1, 0);
-	} else if (e.keyCode == 38) { // 38: ArrowUp
+	} else if (e.keyCode == 38 || e.keyCode == 87) { // 38: ArrowUp, 87: w
 		return moveFocus(e, 0, -1);
-	} else if (e.keyCode == 39) { // 39: ArrowRight
+	} else if (e.keyCode == 39 || e.keyCode == 68) { // 39: ArrowRight, 68: d
 		return moveFocus(e, 1, 0);
-	} else if (e.keyCode == 40) { // 40: ArrowDown
+	} else if (e.keyCode == 40 || e.keyCode == 83) { // 40: ArrowDown, 83: s
 		return moveFocus(e, 0, 1);
 	}
 }
