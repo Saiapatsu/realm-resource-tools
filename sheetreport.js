@@ -91,8 +91,6 @@ function describe(px, py, sw, sh, file) {
 		const duplicates = mapAtomToDupGroup.has(atom) ? "Duplicates: " + mapAtomToDupGroup.get(atom).map(x => `<a href="#${x}">${x}</a>`).join(", ") : "";
 		return `${usagesTable}${duplicates}<h3>${atom}</h3>`;
 	}).filter(Boolean);
-	if (!info.length)
-		return ""; // no longer possible
 	return show(info.join("<hr>"));
 }
 

@@ -37,7 +37,7 @@ end
 -- file -> fileobject
 local fileToObject = {}
 -- sheet -> file
-local sheetToFile = {}
+-- local sheetToFile = {}
 -- [fileobject]
 local filelist = {}
 -- file -> [sheet]
@@ -65,7 +65,7 @@ local fileset = {}
 local function xSheet(list)
 	for name, sheet in pairs(list) do
 		-- populate sheetToFile and try adding to fileset
-		sheetToFile[name] = sheet.file
+		-- sheetToFile[name] = sheet.file
 		indexes[name] = {}
 		fileset[sheet.file] = true
 		if sheet.mask and not fs.existsSync(srcsheets .. pathsep .. sheet.mask) then
