@@ -113,7 +113,6 @@ local function xSheet(list, animated)
 		
 		common.readSprites(srcsheets .. pathsep .. sheet.file, sheet.w, sheet.h, function(index, tile)
 			if tile == emptytile then return end
-			
 			get(get(tileToDupGroup, tile), name)[index] = animated
 		end)
 	end
@@ -123,9 +122,6 @@ xSheet(srcjson.images, false)
 print("Animated")
 xSheet(srcjson.animatedchars, true)
 
--- atomize's animated parameter needs to be removed for this one to work properly
--- also, tileToDupGroup's contents need to be deduplicated (atom = true)
---[[
 -- for good measure, find duplicate sprites in individual frames of animated sheets
 local function xSheet(list, animated)
 	for name, sheet in pairs(list) do
@@ -133,20 +129,15 @@ local function xSheet(list, animated)
 		local emptytile = string.rep("\0", sheet.sw * sheet.sh * 4)
 		
 		common.readSprites(srcsheets .. pathsep .. sheet.file, sheet.sw, sheet.sh, function(index, tile)
-			if tile == emptytile then return end
+			-- ignore the attack frame's right half
+			if index % 7 == 6 or tile == emptytile then return end
 			index = math.floor(index * sheet.sw * sheet.sh / (sheet.w * sheet.h))
-			
-			-- table.insert(get(tileToDupGroup, tile), {
-				-- sheet = name,
-				-- index = index,
-			-- })
-			table.insert(get(tileToDupGroup, tile), atomize(name, index, animated))
+			get(get(tileToDupGroup, tile), name)[index] = animated
 		end)
 	end
 end
 print("Animated, individual frames")
 xSheet(srcjson.animatedchars, true)
-]]
 
 -- turn the monstrosity that is tileToDupGroup into an array and remove groups with only one tile
 for tile, groupSheet in pairs(tileToDupGroup) do
