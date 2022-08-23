@@ -105,7 +105,7 @@ function goToURL(url) {
 	if (!match) return;
 	// index: index of sprite on sheet
 	const index = Number(match[2]);
-	if (!index) return;
+	if (isNaN(index)) return;
 	// sheet: sheet name
 	const sheet = match[1];
 	return goToSprite(sheet, index);
