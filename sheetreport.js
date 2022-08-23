@@ -115,13 +115,20 @@ function goToSprite(sheet, index) {
 	const file = asset.file;
 	const element = document.getElementById(file);
 	const rect = element.getBoundingClientRect();
+	// sheet size
+	const sw = Math.floor(rect.width / scale);
+	const sh = Math.floor(rect.height / scale);
 	// tile position on the sheet
-	const stride = Math.floor(rect.width / (scale * asset.w));
+	const stride = sw / asset.w;
 	const tx = index % stride;
 	const ty = Math.floor(index / stride);
+	// position in pixels on the sheet
+	const px = tx * asset.w;
+	const py = ty * asset.h;
 	// position in pixels on the element
-	const my = ty * asset.h * scale;
+	const my = py * scale;
 	// scroll to sprite
 	window.scrollTo(0, window.scrollY + rect.top + my);
+	return describe(px, py, sw, sh, file);
 	// todo: highlight sprite
 }
