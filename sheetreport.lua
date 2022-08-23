@@ -44,7 +44,7 @@ local fileToSheets = {}
 -- sheet -> index -> [backreference]
 local indexes = {}
 
--- tile -> [[sheet, index, animated]]
+-- tile -> sheet -> index -> animated
 local tileToDupGroup = {}
 -- [[[sheet, index, animated]]]
 local dupGroups = {}
@@ -114,11 +114,7 @@ local function xSheet(list, animated)
 		common.readSprites(srcsheets .. pathsep .. sheet.file, sheet.w, sheet.h, function(index, tile)
 			if tile == emptytile then return end
 			
-			-- table.insert(get(tileToDupGroup, tile), {
-				-- sheet = name,
-				-- index = index,
-			-- })
-			table.insert(get(tileToDupGroup, tile), {name, index, animated})
+			get(get(tileToDupGroup, tile), name)[index] = animated
 		end)
 	end
 end
@@ -152,10 +148,19 @@ print("Animated, individual frames")
 xSheet(srcjson.animatedchars, true)
 ]]
 
--- remove sprites that aren't duplicate and add to array
-for tile, group in pairs(tileToDupGroup) do
-	if #group ~= 1 then
-		table.insert(dupGroups, group)
+-- turn the monstrosity that is tileToDupGroup into an array and remove groups with only one tile
+for tile, groupSheet in pairs(tileToDupGroup) do
+	local group = {}
+	local count = 0
+	for sheet, groupIndex in pairs(groupSheet) do
+		for index, animated in pairs(groupIndex) do
+			count = count + 1
+			table.insert(group, {sheet, index, animated})
+			if count == 2 then
+				-- there's at least two occurrences of this tile, so go ahead and export it
+				table.insert(dupGroups, group)
+			end
+		end
 	end
 end
 tileToDupGroup = nil
