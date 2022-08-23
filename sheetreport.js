@@ -29,7 +29,6 @@ function onMouseMove(e) {
 }
 
 function onMouseDown(e) {
-	console.log(e);
 	if (e.target.tagName === "IMG") {
 		focused = true;
 		return withPosition(e, clickImage);
@@ -98,8 +97,6 @@ function clickImage(px, py, sw, sh, file) {
 	const sheet = fileToSheets[file][0];
 	var animated = false;
 	const asset = assets.images[sheet] || (animated = true) && assets.animatedchars[sheet];
-	const element = document.getElementById(file);
-	const rect = element.getBoundingClientRect();
 	const stride = sw / asset.w;
 	// tile position
 	const tx = Math.floor(px / asset.w);
