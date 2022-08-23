@@ -156,7 +156,7 @@ function goToSprite(sheet, index) {
 	// position in pixels on the element
 	const my = py * scale;
 	// scroll to sprite
-	window.scrollTo(0, window.scrollY + rect.top + my);
+	window.scrollTo(0, window.scrollY + rect.top + my - (window.innerHeight - asset.h * scale) / 2);
 	highlight(element, tx, ty, asset.w, asset.h);
 	return describe(px, py, sw, sh, file, element);
 }
