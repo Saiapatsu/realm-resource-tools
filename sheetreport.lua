@@ -46,12 +46,20 @@ local fileToSheets = {}
 -- sheet -> index -> [backreference]
 local indexes = {}
 
---------------------------------------------------------------------------------
-
--- list all files in use that actually exist (aren't invisible)
+-- tile -> [atom]
+local tileToDupGroup = {}
+-- [[atom]]
+local dupGroups = {}
 
 local srcjsontext = fs.readFileSync(srcassets)
 local srcjson = json.parse(srcjsontext)
+
+--------------------------------------------------------------------------------
+
+-- list all files in use that actually exist (aren't invisible)
+print("Finding sheets")
+
+-- sheet.file -> true
 local fileset = {}
 
 local function xSheet(list)
@@ -77,6 +85,7 @@ for name, _ in pairs(fileset) do
 		table.insert(filelist, fileobject)
 	else
 		print("Unable to find sheet " .. name)
+		fileset[name] = nil
 	end
 end
 
@@ -85,6 +94,69 @@ common.getSizes(filelist, srcsheets)
 
 -- sort filelist alphabetically
 table.sort(filelist, function(a, b) return string.upper(a.file) < string.upper(b.file) end)
+
+--------------------------------------------------------------------------------
+
+-- find duplicate sprites
+print("Finding duplicate sprites")
+
+local function atomize(sheet, index, animated)
+	return sheet .. ":" .. (animated and index or string.format("0x%x", index))
+end
+
+local function xSheet(list, animated)
+	for name, sheet in pairs(list) do
+		if fileset[sheet.file] == nil then return end
+		local emptytile = string.rep("\0", sheet.w * sheet.h * 4)
+		
+		common.readSprites(srcsheets .. pathsep .. sheet.file, sheet.w, sheet.h, function(index, tile)
+			if tile == emptytile then return end
+			
+			-- table.insert(get(tileToDupGroup, tile), {
+				-- sheet = name,
+				-- index = index,
+			-- })
+			table.insert(get(tileToDupGroup, tile), atomize(name, index, animated))
+		end)
+	end
+end
+print("Static")
+xSheet(srcjson.images, false)
+print("Animated")
+xSheet(srcjson.animatedchars, true)
+
+-- atomize's animated parameter needs to be removed for this one to work properly
+-- also, tileToDupGroup's contents need to be deduplicated (atom = true)
+--[[
+-- for good measure, find duplicate sprites in individual frames of animated sheets
+local function xSheet(list, animated)
+	for name, sheet in pairs(list) do
+		if fileset[sheet.file] == nil then return end
+		local emptytile = string.rep("\0", sheet.sw * sheet.sh * 4)
+		
+		common.readSprites(srcsheets .. pathsep .. sheet.file, sheet.sw, sheet.sh, function(index, tile)
+			if tile == emptytile then return end
+			index = math.floor(index * sheet.sw * sheet.sh / (sheet.w * sheet.h))
+			
+			-- table.insert(get(tileToDupGroup, tile), {
+				-- sheet = name,
+				-- index = index,
+			-- })
+			table.insert(get(tileToDupGroup, tile), atomize(name, index, animated))
+		end)
+	end
+end
+print("Animated, individual frames")
+xSheet(srcjson.animatedchars, true)
+]]
+
+-- remove sprites that aren't duplicate and add to array
+for tile, group in pairs(tileToDupGroup) do
+	if #group ~= 1 then
+		table.insert(dupGroups, group)
+	end
+end
+tileToDupGroup = nil
 
 --------------------------------------------------------------------------------
 
@@ -116,7 +188,8 @@ end)
 
 --------------------------------------------------------------------------------
 
-function stringifyIndexes()
+-- manually stringify indexes, otherwise json.stringify will horribly deface it
+function stringifyIndexes(indexes)
 	local rope = {}
 	local function p(x) table.insert(rope, x) end
 	local function q(x) return p('"' .. x .. '"') end
@@ -180,8 +253,9 @@ end
 table.insert(html, "<div id=info style=position:fixed;right:0;bottom:0;></div>")
 table.insert(html, [[<script>
 const assets = ]] .. srcjsontext .. [[;
-const indexes = ]] .. stringifyIndexes() .. [[;
+const indexes = ]] .. stringifyIndexes(indexes) .. [[;
 const fileToSheets = ]] .. json.stringify(fileToSheets) .. [[;
+const dupGroups = ]] .. json.stringify(dupGroups) .. [[;
 const scale = ]] .. scale .. [[;
 ]] .. fs.readFileSync(script:match(".*" .. pathsep) .. "sheetreport.js") .. [[
 </script>]])

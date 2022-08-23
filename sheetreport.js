@@ -1,9 +1,14 @@
 const info = document.getElementById("info");
 document.body.onmousemove = e => onMouseMove(e);
 // document.body.onscroll = e => onMouseMove(e);
+
 function show(str) {
 	info.innerHTML = str;
 }
+
+const mapAtomToDupGroup = new Map();
+dupGroups.forEach(group => group.forEach(atom => mapAtomToDupGroup.set(atom, group)));
+
 function onMouseMove(e) {
 	const target = e.target;
 	// not pointing at an image?
@@ -35,10 +40,10 @@ function onMouseMove(e) {
 		const index = ty * stride + tx;
 		// the real stuff
 		const usages = indexes[sheet][index];
-		const sheetindex = `<h3>${sheet} ${animated ? index : "0x" + index.toString(16)}</h3>`;
-		if (!usages)
-			return sheetindex;
-		return `<table>` + usages.map(x => `<tr><td>${x.id}<td>${x.xml}</tr>`).join("") + `</table>${sheetindex}`;
+		const usagestable = usages ? `<table>` + usages.map(x => `<tr><td>${x.id}<td>${x.xml}</tr>`).join("") + `</table>` : "";
+		const atom = `${sheet}:${animated ? index : "0x" + index.toString(16)}`;
+		const duplicates = mapAtomToDupGroup.has(atom) ? "Duplicates: " + mapAtomToDupGroup.get(atom).join(", ") : "";
+		return `${usagestable}${duplicates}<h3>${atom}</h3>`;
 	}).filter(Boolean);
 	if (!info.length)
 		return ""; // no longer possible
