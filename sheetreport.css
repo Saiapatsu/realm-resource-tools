@@ -11,6 +11,11 @@ img {
 } span.mask {
 	padding: 8px;
 	display: inline-block;
+} div.highlight {
+	position: absolute;
+	border: 1px yellow solid;
+	margin: 7px; /* 8 - 1 */
+	/* width, height, top, left are specified later */
 } #info h3 {
 	text-align: right;
 } #info table {

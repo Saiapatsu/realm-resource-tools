@@ -9,6 +9,10 @@ window.onhashchange = e => onHashChange(e);
 const mapAtomToDupGroup = new Map();
 dupGroups.forEach(group => group.forEach(atom => mapAtomToDupGroup.set(atom, group)));
 
+// setup highlight square
+const highlightElem = document.createElement("div");
+highlightElem.className = "highlight";
+
 // whether to pause onMouseMove
 var focused = false;
 // what the location's hash was just set to
@@ -37,7 +41,6 @@ function onMouseMove(e) {
 
 function onMouseDown(e) {
 	if (e.target.tagName === "IMG") {
-		focused = true;
 		return withPosition(e, clickImage);
 	} else if (!info.contains(e.target)) {
 		return unfocus();
@@ -56,6 +59,7 @@ function onKeyDown(e) {
 
 function unfocus() {
 	focused = false;
+	highlightElem.remove();
 	return onMouseMove(lastMouseEvent);
 }
 
@@ -76,7 +80,8 @@ function goToURL(url) {
 
 // figure out the position on sheet, sheet size and filename of a mouse event
 function withPosition(e, callback) {
-	const rect = e.target.getBoundingClientRect();
+	const element = e.target;
+	const rect = element.getBoundingClientRect();
 	// mouse position on image
 	const mx = e.clientX - rect.x;
 	const my = e.clientY - rect.y;
@@ -90,12 +95,12 @@ function withPosition(e, callback) {
 	const sw = Math.floor(rect.width / scale);
 	const sh = Math.floor(rect.height / scale);
 	// image name, for lack of a better place to get it
-	const file = e.target.attributes.id.value;
+	const file = element.attributes.id.value;
 	// const sheet = fileToSheets[file][0];
-	return callback(px, py, sw, sh, file);
+	return callback(px, py, sw, sh, file, element);
 }
 
-function describe(px, py, sw, sh, file) {
+function describe(px, py, sw, sh, file, element) {
 	const info = fileToSheets[file].map(sheet => {
 		var animated = false;
 		const asset = assets.images[sheet] || (animated = true) && assets.animatedchars[sheet];
@@ -114,7 +119,8 @@ function describe(px, py, sw, sh, file) {
 	return show(info.join("<hr>"));
 }
 
-function clickImage(px, py, sw, sh, file) {
+function clickImage(px, py, sw, sh, file, element) {
+	focused = true;
 	const sheet = fileToSheets[file][0];
 	var animated = false;
 	const asset = assets.images[sheet] || (animated = true) && assets.animatedchars[sheet];
@@ -124,12 +130,15 @@ function clickImage(px, py, sw, sh, file) {
 	const ty = Math.floor(py / asset.h);
 	const index = ty * stride + tx;
 	// set location's hash
+	// does not call goToSprite()
 	newHash = `#${sheet}:${animated ? index : "0x" + index.toString(16)}`;
 	document.location.hash = newHash;
-	return describe(px, py, sw, sh, file);
+	highlight(element, tx, ty, asset.w, asset.h);
+	return describe(px, py, sw, sh, file, element);
 }
 
 function goToSprite(sheet, index) {
+	focused = true;
 	const asset = assets.images[sheet] || assets.animatedchars[sheet];
 	const file = asset.file;
 	const element = document.getElementById(file);
@@ -148,6 +157,12 @@ function goToSprite(sheet, index) {
 	const my = py * scale;
 	// scroll to sprite
 	window.scrollTo(0, window.scrollY + rect.top + my);
-	return describe(px, py, sw, sh, file);
-	// todo: highlight sprite
+	highlight(element, tx, ty, asset.w, asset.h);
+	return describe(px, py, sw, sh, file, element);
+}
+
+// highlight a rectangle on an image
+function highlight(element, tx, ty, aw, ah) {
+	element.parentNode.appendChild(highlightElem);
+	highlightElem.setAttribute("style", `width:${aw * scale}px;height:${ah * scale}px;left:${tx * aw * scale}px;top:${ty * ah * scale}px`)
 }
