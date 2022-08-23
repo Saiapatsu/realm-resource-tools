@@ -66,8 +66,12 @@ local function xSheet(list)
 		-- sheetToFile[name] = sheet.file
 		indexes[name] = {}
 		fileset[sheet.file] = true
-		if sheet.mask and not fs.existsSync(srcsheets .. pathsep .. sheet.mask) then
-			print("Unable to find mask " .. sheet.mask)
+		if sheet.mask then
+			if fs.existsSync(srcsheets .. pathsep .. sheet.mask) then
+				table.insert(get(fileToSheets, sheet.mask), name)
+			else
+				print("Unable to find mask " .. sheet.mask)
+			end
 		end
 		table.insert(get(fileToSheets, sheet.file), name)
 	end
