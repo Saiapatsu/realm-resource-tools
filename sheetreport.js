@@ -2,7 +2,6 @@ const info = document.getElementById("info");
 document.onmousemove = e => onMouseMove(e);
 document.onmousedown = e => onMouseDown(e);
 window.onhashchange = e => onHashChange(e);
-goToURL(location);
 
 // set up duplicate detection
 const mapAtomToDupGroup = new Map();
@@ -12,6 +11,9 @@ dupGroups.forEach(group => group.forEach(atom => mapAtomToDupGroup.set(atom, gro
 var focused = false;
 // what the location's hash was just set to
 var newHash;
+
+// use location hash
+goToURL(location);
 
 // print html in the bottom right corner
 function show(str) {
@@ -69,7 +71,7 @@ function withPosition(e, callback) {
 	const sw = Math.floor(rect.width / scale);
 	const sh = Math.floor(rect.height / scale);
 	// image name, for lack of a better place to get it
-	const file = e.target.attributes.src.value;
+	const file = e.target.attributes.id.value;
 	// const sheet = fileToSheets[file][0];
 	return callback(px, py, sw, sh, file);
 }
