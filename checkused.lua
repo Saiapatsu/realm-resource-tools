@@ -13,10 +13,6 @@ local common = require "./common"
 local script, dir = unpack(args)
 if dir == nil then print("No directory specified") return end
 
-local chunker = common.chunker
-local readSprites = common.readSprites
-local writeSprites = common.writeSprites
-local makePos = common.makePos
 local pathsep = common.pathsep
 
 local srcxml = dir .. pathsep .. "xml"
@@ -36,7 +32,7 @@ local usedSheets = {}
 function Texture(xml, name)
 	xml:skipAttr()
 	local sheet, index = common.fileindex(xml)
-	local atom = makePos(sheet, tonumber(index))
+	local atom = common.makePos(sheet, tonumber(index))
 	local bin = name == "Texture" and usedTextures or usedAnimatedTextures
 	bin[atom] = true
 	usedSheets[sheet] = true
@@ -68,24 +64,32 @@ local function split(used, sheet, file, w, h, stride)
 		print(pathFile)
 	end
 	
-	local fileUsed = writeSprites(dirUsed .. pathsep .. sheet .. ".png", w, h, stride)
-	local fileUnused = writeSprites(dirUnused .. pathsep .. sheet .. ".png", w, h, stride)
+	local countUsed   = 0
+	local countUnused = 0
+	local ropeUsed   = {}
+	local ropeUnused = {}
 	
 	local empty = string.rep("\0", w * h * 4)
 	
-	readSprites(pathFile, w, h, function(index, tile)
-		local atom = makePos(sheet, index)
+	common.readSprites(pathFile, w, h, function(index, tile)
+		local atom = common.makePos(sheet, index)
 		if used[atom] then
-			fileUsed:write(tile)
-			fileUnused:write(empty)
+			countUsed = countUsed + 1
+			table.insert(ropeUsed  , tile)
+			table.insert(ropeUnused, empty)
 		else
-			fileUsed:write(empty)
-			fileUnused:write(tile)
+			countUnused = countUnused + 1
+			table.insert(ropeUsed  , empty)
+			table.insert(ropeUnused, tile)
 		end
 	end)
 	
-	fileUsed:close()
-	fileUnused:close()
+	if countUsed ~= 0 then
+		common.writeSpritesSync(dirUsed   .. pathsep .. sheet .. ".png", w, h, stride, table.concat(ropeUsed  ))
+	end
+	if countUnused ~= 0 then
+		common.writeSpritesSync(dirUnused .. pathsep .. sheet .. ".png", w, h, stride, table.concat(ropeUnused))
+	end
 end
 
 for sheet, asset in pairs(assets.images) do
