@@ -233,7 +233,8 @@ for _,file in ipairs(filelist) do
 	for _,sheet in ipairs(fileToSheets[file.file]) do
 		table.insert(html, "<h3>" .. sheet .. "</h3>")
 	end
-	table.insert(html, string.format("<span class=sprite><img src=\"%s\" width=%d height=%d></span>"
+	table.insert(html, string.format("<span class=sprite><img src=\"%s\" id=\"%s\" width=%d height=%d></span>"
+		, file.file
 		, file.file
 		, file.w * scale
 		, file.h * scale
@@ -241,7 +242,8 @@ for _,file in ipairs(filelist) do
 	for _,sheet in ipairs(fileToSheets[file.file]) do
 		sheet = srcjson.animatedchars[sheet]
 		if sheet and sheet.mask then
-			table.insert(html, string.format("<span class=mask><img src=\"%s\" width=%d height=%d></span>"
+			table.insert(html, string.format("<span class=mask><img src=\"%s\" id=\"%s\" width=%d height=%d></span>"
+				, sheet.mask
 				, sheet.mask
 				, file.w * scale
 				, file.h * scale
