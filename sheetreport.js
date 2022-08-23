@@ -93,9 +93,11 @@ function show(str) {
 function unfocus() {
 	focused = false;
 	highlightElem.remove();
+	setHash(""); // clear out manually set hash, if any
 	return onMouseMove(lastMouseEvent);
 }
 
+// highlight a sprite when hash is set
 function onHashChange(e) {
 	return goToURL(new URL(e.newURL));
 }
@@ -178,7 +180,7 @@ function clickImage(px, py, sw, sh, file, element) {
 	const index = ty * stride + tx;
 	// set location's hash
 	// does not call goToSprite()
-	setHash(`#${sheet}:${animated ? index : "0x" + index.toString(16)}`);
+	// setHash(`#${sheet}:${animated ? index : "0x" + index.toString(16)}`);
 	highlight(element, tx, ty, asset.w, asset.h, sheet, stride);
 	return describe(px, py, sw, sh, file, element);
 }
@@ -238,7 +240,7 @@ function moveFocus(e, dtx, dty) {
 	const index = ty * lstride + tx;
 	// bounds check
 	if (tx < 0 || tx * asset.w >= sw || ty < 0 || ty * asset.h >= sh) return;
-	setHash(`#${lsheet}:${animated ? index : "0x" + index.toString(16)}`);
+	// setHash(`#${lsheet}:${animated ? index : "0x" + index.toString(16)}`);
 	goToSprite(lsheet, index);
 	return highlight(lelement, tx, ty, law, lah, lsheet, lstride);
 }
