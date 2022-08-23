@@ -21,6 +21,15 @@ local dirUsed = dir .. pathsep .. "sheets-used"
 local dirUnused = dir .. pathsep .. "sheets-unused"
 local dirSheets = dir .. pathsep .. "sheets"
 
+local function get(tbl, key)
+	local value = tbl[key]
+	if value == nil then
+		value = {}
+		tbl[key] = value
+	end
+	return value
+end
+
 -----------------------------------
 
 print("Reading data")
@@ -32,9 +41,9 @@ local usedSheets = {}
 function Texture(xml, name)
 	xml:skipAttr()
 	local sheet, index = common.fileindex(xml)
-	local atom = common.makePos(sheet, tonumber(index))
+	index = tonumber(index)
 	local bin = name == "Texture" and usedTextures or usedAnimatedTextures
-	bin[atom] = true
+	get(bin, sheet)[index] = true
 	usedSheets[sheet] = true
 end
 
@@ -72,11 +81,10 @@ local function split(used, sheet, file, w, h, stride)
 	local empty = string.rep("\0", w * h * 4)
 	
 	common.readSprites(pathFile, w, h, function(index, tile)
-		local atom = common.makePos(sheet, index)
 		if tile == empty then
 			table.insert(ropeUsed  , empty)
 			table.insert(ropeUnused, empty)
-		elseif used[atom] then
+		elseif get(used, sheet)[index] then
 			countUsed = countUsed + 1
 			table.insert(ropeUsed  , tile)
 			table.insert(ropeUnused, empty)
