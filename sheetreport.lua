@@ -1,7 +1,8 @@
 --[[
-sheetreport <srcdir>
+sheetreport <srcAssets>
 
-srcdir: a directory shaped like what sheetmover expects
+Generate an interactive HTML file where you can mouse over a sprite and see the Objects or Grounds that use it and any of its duplicates.
+Creates `<srcAssets>\sheetreport.html`.
 ]]
 
 local fs = require "fs"

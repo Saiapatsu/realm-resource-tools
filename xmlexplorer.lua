@@ -1,5 +1,23 @@
--- xmlexplorer <dir>
--- print the hierarchy and amount of all tags in a folder full of xml files
+--[[
+xmlexplorer <inDirXml>
+
+Print the hierarchy and amount of all tags in a folder full of xml files.
+
+```
+Objects 72
+	Object 4827
+		@type 4827
+		@id 4827
+		@setType 28
+		@setName 28
+		Class 4822
+		Texture 3286
+			File 3286
+			Index 3286
+		Description 1596
+```
+etc.
+]]
 
 local fs = require "fs"
 local xmls = require "xmls2"

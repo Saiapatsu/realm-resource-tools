@@ -1,7 +1,11 @@
--- addtypes <indir> [<outdir>]
--- Add missing type attributes to object and ground xmls
--- indir: directory containing all xml files with objects and grounds in them
--- outdir: all modified xmls get written in this directory, if not into indir
+--[[
+addtypes <inDirXml> [<outDirXml>]
+
+Add missing type attributes to object and ground xmls.
+
+- `inDirXml`: directory containing all xml files with objects and grounds in them
+- `outDirXml`: all modified xmls get written in this directory, if not into `inDirXml`
+]]
 local xmls = require "xmls2"
 local fs = require "fs" -- from luvit
 local common = require "./common"

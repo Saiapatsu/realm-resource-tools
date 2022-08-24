@@ -1,9 +1,13 @@
--- visualizeTypes <dirXml> <pathImageObjects> <pathImageGrounds> [<method>]
--- Create a 256x256 image representing all the types used in the xmls in dir
--- dirXml: directory containing all xml files with objects and grounds in them
--- pathImageObjects: path to image that will display object types
--- pathImageGrounds: path to image that will display ground types
--- method: if there is any 5th argument at all, then morton/z-curve transform type ids
+--[[
+visualizeTypes <inDirXml> <outPathObjects> <outPathGrounds> [<method>]
+
+Create a 256x256 bitmap representing all the types used in the xmls in `inDirXml`.
+
+- `inDirXml`: directory containing all xml files with objects and grounds in them
+- `outPathObjects`: path to bitmap of object types
+- `outPathGrounds`: path to bitmap of ground types
+- `method`: if this argument is specified, then morton/z-curve transform type ids
+]]
 
 local unparse = require "escape".unparse
 local common = require "./common"

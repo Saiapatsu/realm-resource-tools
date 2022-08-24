@@ -1,8 +1,11 @@
 --[[
-checkused <dir>
+checkused <srcAssets>
 
-Reads all XMLs and spritesheets and splits them into "used" and "unused" spritesheets
+Reads all XMLs and spritesheets and splits them into "used" and "unused" spritesheets.
 
+Creates two directories:
+- `<srcAssets>\sheets-used`
+- `<srcAssets>\sheets-unused`
 ]]
 
 local fs = require "fs"

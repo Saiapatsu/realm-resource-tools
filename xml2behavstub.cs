@@ -1,10 +1,9 @@
 /*
+xml2behavstub <inPathXml> <outName>
 
-xml2behavstub <path> <name>
+Convert Objects in `<inPathXml>` into `BehaviorDb.<outName>.cs` C# behavior stubs.
 
-Converts RotMG XML data in <path> into BehaviorDb.<name>.cs behaviors.
-
-The behaviors are empty and meant to be filled in with real behaviors.
+The stubs are empty and meant to be filled in with real behaviors.
 
 There is useful data above each behavior, such as the DisplayId, projectiles,
 whether it's invisible etc., so that you don't have to ctrl-F for this
@@ -23,7 +22,6 @@ xml2behavstub.exe parasiteDenObjects.xml ParasiteChambers
 Permission to use, copy, modify, and/or distribute this software for
 any purpose with or without fee is hereby granted. This software is
 offered as-is, without any warranty.
-
 */
 
 using System; // Console

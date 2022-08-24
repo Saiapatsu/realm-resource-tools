@@ -1,47 +1,21 @@
 --[[
-sheetmover <srcdir> <dstdir>
-Fixes references to sprites in xmls after rearranging sprites in sheets.
+sheetmover <srcAssets> <dstAssets>
 
-srcdir and dstdir are shaped like this:
-	xml\
-		<xml files>
-	sheets\
-		<spritesheets>
-	assets.json
+Fixes references to sprites in xmls after you rearrange sprites in sheets.
 
-assets.json is an ad-hoc conversion of AssetLoader.as (?) to JSON so as to avoid having to parse as3 in this script.
-It is shaped like this:
-{
-	"images": {
-		<asset name>: {
-			"file": <asset file name>,
-			"w": <tile width>,
-			"h": <tile height>
-		} ...
-	},
-	"animatedchars": {
-		<asset name>: {
-			"file": <asset file name>,
-			"mask": <null|asset file name>,
-			"w": <animation width>,
-			"h": <animation height>,
-			"sw": <tile width>,
-			"sh": <tile height>,
-			"facing": <"RIGHT"|"DOWN">,
-		} ...
-	}
-}
-For example, animatedchars.players.w is 56, h is 24, sw is 8, sh is 8.
-facing and mask are unused.
+- `srcAssets`: a clean copy of your assets before any changes
+- `dstAssets`: assets directory with rearranged sprites and possibly a modified `assets.json`
 
-Arrange your xmls, sheets and AssetLoader in the manner specified into srcdir.
-Duplicate srcdir, let it be dstdir.
-Make your rearrangements in dstdir\sheets.
+The script will fill in the `<dstAssets>\xml` directory.
+
+Arrange your xmls, sheets and AssetLoader in the manner specified into srcAssets.
+Duplicate srcAssets, let it be dstAssets.
+Make your rearrangements in dstAssets\sheets.
 	Do not accidentally modify/recolor, duplicate, add or lose any sprites.
 	You can add new sheets if you create new assets for them in assets.json.
 Run the script on the two directories.
-Replace your sheets with dstdir\sheets, your AssetLoader with dstdir\assets.json and paste dstdir\xml over your xmls.
-	The ultimate output of the script will be in dstdir\xml, although only the modified xmls will be written.
+Replace your sheets with dstAssets\sheets, your AssetLoader with dstAssets\assets.json and paste dstAssets\xml over your xmls.
+	The ultimate output of the script will be in dstAssets\xml, although only the modified xmls will be written.
 
 The script prefers to not modify sprite references if it's the same sprite at the same position in both src and dst.
 
@@ -68,10 +42,8 @@ AnimatedChars.add\("(.*)",(.*),(.*),(.*),(.*),(.*),(.*),(.*)\);
 "$1":{"file":"$2.png","mask":"$3.png","sw":$4,"sh":$5,"w":$6,"h":$7,"facing":$8},
 "null\.png"
 null
-
-[Manual cleanup]
-[Add json brackets, images:, animatedchars:]
-
+<Manual cleanup>
+<Add some json brackets, images:, animatedchars:>
 ,}
 }
 ]]
