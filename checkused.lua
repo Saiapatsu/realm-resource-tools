@@ -63,7 +63,7 @@ print("Processing images")
 
 local assets = json.parse(fs.readFileSync(pathJson))
 
-local function split(used, sheet, file, w, h, stride)
+local function split(used, sheet, file, w, h, stride, mask)
 	local pathFile = dirSheets .. pathsep .. file
 	if not fs.existsSync(pathFile) then
 		print("Missing " .. pathFile)
@@ -95,6 +95,10 @@ local function split(used, sheet, file, w, h, stride)
 		end
 	end)
 	
+	if mask then
+		sheet = sheet .. "Mask"
+	end
+	
 	if countUsed ~= 0 then
 		common.writeSpritesSync(dirUsed   .. pathsep .. sheet .. ".png", w, h, stride, table.concat(ropeUsed  ))
 	end
@@ -105,15 +109,15 @@ end
 
 for sheet, asset in pairs(assets.images) do
 	if usedSheets[sheet] then
-		split(usedTextures, sheet, asset.file, asset.w, asset.h, 16)
+		split(usedTextures, sheet, asset.file, asset.w, asset.h, 16, false)
 	end
 end
 
 for sheet, asset in pairs(assets.animatedchars) do
 	if usedSheets[sheet] then
-		split(usedAnimatedTextures, sheet, asset.file, asset.w, asset.h, 1)
+		split(usedAnimatedTextures, sheet, asset.file, asset.w, asset.h, 1, false)
 		if asset.mask then
-			split(usedAnimatedTextures, sheet .. "Mask", asset.file, asset.w, asset.h, 1)
+			split(usedAnimatedTextures, sheet, asset.mask, asset.w, asset.h, 1, true)
 		end
 	end
 end
