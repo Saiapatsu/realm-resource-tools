@@ -164,7 +164,7 @@ local function getIndex(file, index)
 	return get(indexes[file], index)
 end
 
-local function Texture(xml, animated)
+local function Texture(xml)
 	xml:skipAttr()
 	local file, index = common.fileindex(xml)
 	index = tonumber(index)
@@ -176,10 +176,25 @@ local function Texture(xml, animated)
 		pos = xml.pos,
 	})
 end
-local root = common.makeTextureRoot(
-	function(xml) return Texture(xml, false) end,
-	function(xml) return Texture(xml, true) end
-)
+
+function Tex(xml)
+	xml:skipAttr()
+	local color = tonumber((xml:getInnerText()))
+	-- dyes are 1x1, so to speak
+	if color < 0x2000000 then return end
+	local index = bit.band(color, 0xffffff)
+	local size = bit.rshift(color, 24)
+	local sheet = string.format("textile%dx%d", size, size)
+	table.insert(getIndex(sheet, index), {
+		type = xml.typenum,
+		id = xml.id,
+		xml = xml.name,
+		pos = xml.pos,
+	})
+end
+
+local root = common.makeTextureRoot(Texture, Texture, nil, Tex)
+
 common.forEachXml(srcxml, function(xml)
 	xml:doTagsRoot(root)
 end)

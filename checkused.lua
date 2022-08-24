@@ -42,12 +42,26 @@ function Texture(xml, name)
 	xml:skipAttr()
 	local sheet, index = common.fileindex(xml)
 	index = tonumber(index)
-	local bin = name == "Texture" and usedTextures or usedAnimatedTextures
+	local bin = name == "AnimatedTexture" and usedAnimatedTextures or usedTextures
 	get(bin, sheet)[index] = true
 	usedSheets[sheet] = true
 end
 
-local root = common.makeTextureRoot(Texture, Texture)
+function Tex(xml)
+	xml:skipAttr()
+	local color = tonumber((xml:getInnerText()))
+	-- dyes are 1x1, so to speak
+	if color < 0x2000000 then return end
+	local index = bit.band(color, 0xffffff)
+	local size = bit.rshift(color, 24)
+	local bin = usedTextures
+	local sheet = string.format("textile%dx%d", size, size)
+	get(bin, sheet)[index] = true
+	usedSheets[sheet] = true
+end
+
+local root = common.makeTextureRoot(Texture, Texture, nil, Tex)
+
 common.forEachXml(srcxml, function(xml)
 	xml:doTagsRoot(root)
 end)
@@ -115,9 +129,9 @@ end
 
 for sheet, asset in pairs(assets.animatedchars) do
 	if usedSheets[sheet] then
-		split(usedAnimatedTextures, sheet, asset.file, asset.w, asset.h, 1, false)
+		-- split(usedAnimatedTextures, sheet, asset.file, asset.w, asset.h, 1, false)
 		if asset.mask then
-			split(usedAnimatedTextures, sheet, asset.mask, asset.w, asset.h, 1, true)
+			-- split(usedAnimatedTextures, sheet, asset.mask, asset.w, asset.h, 1, true)
 		end
 	end
 end

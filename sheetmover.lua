@@ -290,14 +290,13 @@ local function replaceFinish(xml)
 end
 
 local function Texture(xml)
-	local pos = xml.pos
 	xml:skipAttr()
 	-- <Texture><File>file</File><Index>0</Index></Texture>
 	local file, index, fa, fb, ia, ib = common.fileindex(xml)
 	local srcatom = makePos(file, tonumber(index))
 	local dstatom = srcPosToDstPos[srcatom]
 	if dstatom then
-		printf("Moving %s to %s at %s", srcatom, dstatom, xml:traceback(pos))
+		printf("Moving %s to %s at %s", srcatom, dstatom, xml:traceback(xml.basePos))
 		local dstfile, dstindex = dstatom:match("^([^:]*):(.*)$")
 		-- if the file is not an animated character, convert index to hex
 		if dstjson.images[dstfile] then
@@ -313,7 +312,31 @@ local function Texture(xml)
 	end
 end
 
-local Root = common.makeTextureRoot(Texture, Texture)
+function Tex(xml)
+	xml:skipAttr()
+	local text, ia, ib = xml:getInnerText()
+	local color = tonumber(text)
+	-- dyes are 1x1, so to speak
+	if color < 0x2000000 then return end
+	local index = bit.band(color, 0xffffff)
+	local size = bit.rshift(color, 24)
+	local file = string.format("textile%dx%d", size, size)
+	local srcatom = makePos(file, index)
+	local dstatom = srcPosToDstPos[srcatom]
+	if dstatom then
+		printf("Moving %s to %s at %s", srcatom, dstatom, xml:traceback(xml.basePos))
+		local dstsize, dstindex = dstatom:match("^textile(%d+)x%d+:(.*)$")
+		if dstsize == nil then
+			printf("Invalid textile destination")
+			return
+		end
+		dstsize, dstindex = tonumber(dstsize), tonumber(dstindex)
+		local dstcolorstr = string.format("0x%x", bit.bor(dstindex, bit.lshift(dstsize, 24)))
+		replace(xml, ia, ib, dstcolorstr)
+	end
+end
+
+local Root = common.makeTextureRoot(Texture, Texture, nil, Tex)
 
 -- ensure xml output directory exists
 if not fs.existsSync(dstxml) then

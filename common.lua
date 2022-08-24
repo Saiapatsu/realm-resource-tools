@@ -7,11 +7,15 @@ local common = {}
 
 common.pathsep = pathsep
 
-function common.makeTextureRoot(Texture, AnimatedTexture, RemoteTexture)
+function common.makeTextureRoot(Texture, AnimatedTexture, RemoteTexture, Tex)
 	local descendants = {
 		Texture = Texture,
 		AnimatedTexture = AnimatedTexture,
 		RemoteTexture = RemoteTexture,
+		-- just for dyes and textiles
+		Mask = Texture,
+		Tex1 = Tex,
+		Tex2 = Tex,
 	}
 	
 	local function ObjectOrGround(xml, name, pos)
